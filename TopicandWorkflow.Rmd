@@ -1,3 +1,11 @@
 title: "Topic and Workflow Proposal"
 output: html_document
 date: "2025-11-05"
+
+
+Workflow proposal outline:
+
+- clean data
+- divide analysis tasks 
+- analyze data
+- write results
