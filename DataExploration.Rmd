@@ -1,0 +1,53 @@
+---
+title: "OBA data exploration"
+author: "Jennifer Linnaea"
+date: "2025-11-10"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#read in the data from the "OBA_2018-2024.xlsx" file:
+```{r}
+#acquire a library that can read excel files
+library(readxl)
+```
+
+```{r}
+#oba <- read_excel("../OBA_2018-2024.xlsx")
+
+#There are a number of columns with mixed data types, and it throws thousands
+#of warnings because of them. Just for now I'm going to suppress them. 
+suppressWarnings(
+  oba <- readxl::read_excel("../OBA_2018-2024.xlsx")
+)
+```
+```{r}
+head(oba)
+
+```
+
+```{r}
+#On the online OBA interactive map, I can filter by the regions:
+#1a. Coastal Lowlands
+#1b. Coastal Uplands
+#These regions do not appear in the columns of "OBA_2018-2024.xlsx".
+#So as part of an exploratory data analysis, I'm going to take a subset of the data - 
+#any Oregon county that touches the ocean.
+
+coastal_oba <- oba %>% filter(county %in% c("Clatsop","Tillamook","Lincoln","Lane","Douglas", "Coos","Curry"))
+head(coastal_oba)
+
+```
+
+```{r}
+#Now I want to see every location in these data. 
+#unique(coastal_oba$county) #this was just to confirm the counties are correct.
+unique(coastal_oba$locality)
+#We'll need to filter our data further for only the localities in the coastal regions.
+#I'm going to ask Dr. Ponisio if there's an efficient way to do this.
+```
+
+
