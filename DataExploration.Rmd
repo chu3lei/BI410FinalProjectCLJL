@@ -48,6 +48,9 @@ head(coastal_oba)
 unique(coastal_oba$locality)
 #We'll need to filter our data further for only the localities in the coastal regions.
 #I'm going to ask Dr. Ponisio if there's an efficient way to do this.
+
+#I found a website with an overlay of ecoregions over an Oregon map. It has 
+#every city, and is perfect. However, we may have to do it by hand.
 ```
 
 ```{r}
