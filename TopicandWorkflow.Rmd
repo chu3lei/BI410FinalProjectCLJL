@@ -28,9 +28,9 @@ date: "2025-11-05"
 
 ## Workflow plan (prose)
 1) Cleaning & validation:
-  First we'll subset the data to only contain observations from Oregon coastal areas. Next, we'll make sure that each column contains only a single data type.
+  First, with Oregon Ecoregions data from GEOHub (https://geohub.oregon.gov/datasets/oregon-geo::oregon-ecoregions/explore?location=44.166791%2C-122.744817%2C8.00) we'll subset the data to only contain observations from Oregon coastal areas 1a (Coastal Lowlands) and a2 (Coastal Uplands). Next, we'll make sure that each column contains only a single data type.
 2) Aggregations/derivations:
-  We'll add a column "native_plant" to our dataset that's TRUE if the plant is native to Oregon and FALSE if not. [Where will that info come from? Dr. Ponisio suggested I do it by hand using ] We'll also add a "native_bee" column that's TRUE if the bee species is native to Oregon and FALSE if not. [Dr. Ponisio told me that there are few non-native bees besides the European honey bee, but we need a way to determine this.]
+  We'll add a column "native_plant" to our dataset that's TRUE if the plant is native to Oregon and FALSE if not and fill it with information obtained from Oregon Flora (oregonflora.org). We'll also add a "native_bee" column that's TRUE if the bee species is native to Oregon and FALSE if not. [Dr. Ponisio told me that there are few non-native bees besides the European honey bee, but we need a way to determine this. Or perhaps we could use only European honey bees (since they're the "big invasive") to stand-in for non-native bees.]
 3) Functions/loops (inputs → outputs): …  
 4) Statistical test + programmatic implementation: …  
 5) Planned visualizations/tables: …  
