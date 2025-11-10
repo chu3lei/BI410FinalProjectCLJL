@@ -50,4 +50,9 @@ unique(coastal_oba$locality)
 #I'm going to ask Dr. Ponisio if there's an efficient way to do this.
 ```
 
-
+```{r}
+#I'm going to add a column where I can update whether a given plant is native or not.
+#I'll use oregonflora.org to obtain this information.
+coastal_oba[ , 'native_plant'] <- NA
+head(coastal_oba)
+```
