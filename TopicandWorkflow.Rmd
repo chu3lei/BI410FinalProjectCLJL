@@ -3,24 +3,50 @@ output: html_document
 date: "2025-11-05"
 
 
-# Title of project (system/region)
+# Native vs Nonnative Plant Species on Bee Abundance and Bee Specie Types (Coastal Regions of Oregon)
 
 **Partner(s):** Chu Lei & Jennifer Linnaea
 
 ## Literature review (~5 paragraphs)
 
 ### Paragraph 1 — Problem & significance (big‑picture reviews)
-…
+
+Bees create valuable products like honey and propolis that are medicinally beneficial, pollinate wild plants that support other wildlife and provide services like carbon sequestration and flood prevention, and in the context of our project, help maintain biodiversity and prevent the extinction of many plant species. Bee populations are in decline from a variety of issues, like habitat loss, pesticides, climate change, and biological invasions. These issues are weakening the pollination network and the ecosystem services it provides (Potts et al. 2010). In Oregon, volunteer and research programs like the Oregon Bee Atlas show that restoring diverse, season-long native floral resources can substantially increase native bee abundance and diversity and that targeted management of plant communities can improve wild-bee health (Best et al. 2019). Invasive species that spread pathogens can disrupt plant-pollinator interactions and reduce the reproduction of some native plants, making site-level and plant choice, and invasive-species control critical components of bee conservation (Parra-Tabla et al. 2010). The priorities for the local conservation are to protect and restore native plant collections that provide continuous bloom through the seasons and monitor and manage high densities of introduced pollinators that pose risk to rare plants, all in positively preserving bee abundance and species. Identifying whether native or nonnative plants attract more bees and which bee species prefer each group is essential for conservation planning. Furthermore these patterns can guide community planting efforts and inform restoration movements.
+
+
+Best, L., J. D. Engler, C. Feuerborn, J. Larsen, B. Lindh, C. J. Marshall, A. Melathopoulos, S. Kincaid, S.V. J. Robinson. 2022. Oregon Bee Atlas: Wild bee findings from 2019. Catalog of the Oregon State Arthropod Collection. 6(1): 1—13. DOI: http://dx.doi.org/10.5399/osu/cat_osac.6.1.4906.
+
+Parra-Tabla, V., & Arceo-Gómez, G. (2021). Impacts of plant invasions in native plant–pollinator networks. New Phytologist, 230(6), 2117-2128. https://doi.org/10.1111/nph.17339 
+
+Potts SG, Biesmeijer JC, Kremen C, Neumann P, Schweiger O, Kunin WE. Global pollinator declines: trends, impacts and drivers. Trends Ecol Evol. 2010 Jun;25(6):345-53. doi: 10.1016/j.tree.2010.01.007. Epub 2010 Feb 24. PMID: 20188434. 
+
 
 ### Paragraph 2–3 — Past work & data landscape (who/where/how; gaps)
-…
+
+Researchers in a variety of regions have investigated how bee communities differ between native and nonnative plants which provides important context for the analysis of the possible patterns in coastal Oregon. Seitz found that pollinator visitation rates were generally higher on native plants but that several nonnative species attract abundant generalist bees in Maryland, USA, showing that nonnative plants can be beneficial even though they do not necessarily support the full native bee community (Seitz et al. 2020). Similarly, Marini’s article gathered data from Canada that showed that nonnative plant species were visited mostly by broadly ranging generalist pollinators. Bee communities visiting native and nonnative plants were distinct which raised concern about long-term habitat suitability for more specialized or regionally restricted bees (Martini et al. 2025). In contrast, Chrobock’s paper visits the relationship of plants and bee visitations in urban and semi-natural grassland sites (different habitats) in Switzerland. They found that nonnative ornamental plants showed high visitation in gardens but are disproportionately used by common generalist bees and provide weak support for specialist species (Chrobock et al. 2013). This was to highlight how visitation alone can mask underlying declines in specialists and shifts in community structure. These studies show native and nonnative plants often attract different sets of bee species and nonnative plants can facilitate the spread of invasive flora when bees support their reproduction. 
+
+To address our problem, we will be using GEOHub’s Oregon ecoregions data to classify OBA points into coastal uplands and lowlands using latitude and longitude and the OregonFlora to determine which plant species is native or exotic to evaluate how plant identities shape bee abundance and species diversity in the coastal region of Oregon.
+
+
+Chrobock, T., Winiger, P., Fischer, M., & van Kleunen, M. (2013). The cobblers stick to their lasts: pollinators prefer native over alien plant species in a multi-species experiment. Biological Invasions, 15(11), 2577–2588. https://doi.org/10.1007/s10530-013-0474-3 
+
+Martini, M., Kaul, E., Miller, R., Gibbs, J., & Bobiwash, K. (2025). Non-native plants in road verges attract pollinators despite associated declines in native flowers. Global Ecology and Conservation, 58, Article e03489. https://doi.org/10.1016/j.gecco.2025.e03489 
+
+Seitz, N., vanEngelsdorp, D., & Leonhardt, S. D. (2020). Are native and non‐native pollinator friendly plants equally valuable for native wild bee communities? Ecology and Evolution, 10(23), 12838–12850. https://doi.org/10.1002/ece3.6826 
+
 
 ### Paragraph 4 — Purpose & why now
-…
+
+One key data combination is joining OBA lat and long with GEOHub polygons to filter to coastal ecoregions (listed as 1A and 1B). Another combination is joining OBA plant species with OregonFLora to create a native/nonnative column (where 1=native and 0=nonnative). Aggregating units to compute response variables per unit (bee abundance, bee richness , and species list) will be for composition analysis. Possibly adding percentages of cover for the plant species. AB testing will test whether the same set of bee species would visit plants if origin labels were random. These refined approaches can guide local restoration and planting decisions by choosing which plant species and plant origins best support diverse and abundant bee communities in coastal Oregon. This is needed now because the coast has unique and vulnerable coastal ecosystems where restoration and planting decisions are actively being made. OBA provides longer-term data and spatially distributed observations that let us connect patterns observed in other parts of the world across years and across the landscapes. This would provide regionally explicit evidence about which plant types best support bees. The results can directly inform restoration priorities (which native species to plant), roadside and land-management strategies, and policy decisions about invasive plant control, relevant for local conservation and agricultural pollination resilience.
+
 
 ### Paragraph 5 — Hypotheses (directional) & brief rationale
-- H1: I predict native plants will attract more bee species than nonnative plants in the coastal region because specialist bees evolved with native plants.  
-- H2: I predict native plants will attract more bees visits than nonnative plants in the coastal region because ... .  
+
+- H1: I predict native plants will attract more bee species than nonnative plants in the coastal region because specialist bees evolved with native plant species. Native bees are more likely to recognize, forage efficiently on, and depend on native floral traits. 
+- H2: I predict native plants will attract more bees visits than nonnative plants in the coastal region because native plants typically provide more reliable and chemically familiar nectar and pollen resources for local bee communities. Native plant patches often integrate better into the surrounding coastal habitat, making them easier for bees to locate and repeatedly go to.
+
+I predict that coastal native plants will host a greater number of bee species and higher bee abundance compared to nonnative coastal plants. I predict that native bees will visit native coastal plants more frequently than nonnative plants and that nonnative bees will show no strong preference or be more generalized between plant types. The difference in bee visitation between native and nonnative plants will be strongest for specialist bee species in the coastal region. My questions are do native plants along the Oregon Coast support more bee species than nonnative plants and do bees differ in their visitation patterns to these plant groups.
+ 
 
 ## Dataset identification
 
