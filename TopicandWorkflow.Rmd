@@ -23,6 +23,9 @@ date: "2025-11-05"
 - H2: I predict native plants will attract more bees visits than nonnative plants in the coastal region because ... .  
 
 ## Dataset identification
+
+  We will be using two additional datasets to address our question. The first is a shapefile of Oregon ecoregion data from geohub.oregon.gov (https://geohub.oregon.gov/datasets/oregon-geo::oregon-ecoregions/explore?location=44.148189%2C-122.744817%2C8.00). The data was compiled by the United States Environmental Protection Agency, the National Health and Environmental Effects Research Laboratory (NHEERL), the U.S. Forest Service, the Natural Resources Conservation Service, the Washington State Department of Natural Resources, and the Oregon Natural Heritage Program working in collaboration. The attributes associated with the file are an object id for each polygon, its area, perimeter, three ecoregion codes, ecoregion name, a level 3 ecoregion code, a level 3 ecoregion name, the Oregon Natural Heritage Program code, the Oregon Natural Heritage Program name, a Nature Conservancy Region code, a Nature Conservancy Region name, shape area, and shape length. We will be using the "ECO" and "NAME" attributes, which are associated with small-scale Oregon ecoregions. 
+  
 - Dataset A (URL/DOI): collector, methods, columns/units …
 - OBA → transformed to … (plan and rationale) …
 

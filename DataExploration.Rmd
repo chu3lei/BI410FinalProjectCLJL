@@ -59,3 +59,32 @@ unique(coastal_oba$locality)
 coastal_oba[ , 'native_plant'] <- NA
 head(coastal_oba)
 ```
+```{r}
+#I have obtained a .shp file with the Oregon regions and I want to take a look:
+#I already have the terra and sf packages, so I should be good to go
+
+regions_shp <- st_read("../ecoregion_data/ecoregion.shp")
+```
+```{r}
+regions_shp
+```
+
+```{r}
+#getting the crs info
+crs(regions_shp, proj=TRUE)
+plot(regions_shp,)
+```
+
+```{r}
+#plot
+ggplot() +
+  geom_sf(data = regions_shp, size = 0.5, color = "black", fill = "green") +
+  ggtitle("Oregon Ecoregions") 
+
+```
+Okay, that's great, but it's not useful. I don't need to see the ecoregions, I need to know, for a given lat/long, what ecoregion it's in. 
+
+```{r}
+names(regions_shp) #these are the 'column' names
+#(In fact, in the csv version of this file, they are the column names)
+```
