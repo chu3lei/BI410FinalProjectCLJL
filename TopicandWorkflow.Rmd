@@ -1,15 +1,20 @@
+---
 title: "Topic and Workflow Proposal"
-output: html_document
-date: "2025-11-05"
+author: "Chu Lei and Jennifer Linnaea"
+date: "2025-11-14"
+output:
+  pdf_document: default
+  html_document: default
+---
 
 
 # Native vs Nonnative Plant Species on Bee Abundance and Bee Specie Types (Coastal Regions of Oregon)
 
 **Partner(s):** Chu Lei & Jennifer Linnaea
 
-## Literature review (~5 paragraphs)
+## Literature review 
 
-### Paragraph 1 — Problem & significance (big‑picture reviews)
+### Problem & significance
 
 Bees create valuable products like honey and propolis that are medicinally beneficial, pollinate wild plants that support other wildlife and provide services like carbon sequestration and flood prevention, and in the context of our project, help maintain biodiversity and prevent the extinction of many plant species. Bee populations are in decline from a variety of issues, like habitat loss, pesticides, climate change, and biological invasions. These issues are weakening the pollination network and the ecosystem services it provides (Potts et al. 2010). In Oregon, volunteer and research programs like the Oregon Bee Atlas show that restoring diverse, season-long native floral resources can substantially increase native bee abundance and diversity and that targeted management of plant communities can improve wild-bee health (Best et al. 2019). Invasive species that spread pathogens can disrupt plant-pollinator interactions and reduce the reproduction of some native plants, making site-level and plant choice, and invasive-species control critical components of bee conservation (Parra-Tabla et al. 2010). The priorities for the local conservation are to protect and restore native plant collections that provide continuous bloom through the seasons and monitor and manage high densities of introduced pollinators that pose risk to rare plants, all in positively preserving bee abundance and species. Identifying whether native or nonnative plants attract more bees and which bee species prefer each group is essential for conservation planning. Furthermore these patterns can guide community planting efforts and inform restoration movements.
 
@@ -21,7 +26,7 @@ Parra-Tabla, V., & Arceo-Gómez, G. (2021). Impacts of plant invasions in native
 Potts SG, Biesmeijer JC, Kremen C, Neumann P, Schweiger O, Kunin WE. Global pollinator declines: trends, impacts and drivers. Trends Ecol Evol. 2010 Jun;25(6):345-53. doi: 10.1016/j.tree.2010.01.007. Epub 2010 Feb 24. PMID: 20188434. 
 
 
-### Paragraph 2–3 — Past work & data landscape (who/where/how; gaps)
+### Past Work & Data Landscape 
 
 Researchers in a variety of regions have investigated how bee communities differ between native and nonnative plants which provides important context for the analysis of the possible patterns in coastal Oregon. Seitz found that pollinator visitation rates were generally higher on native plants but that several nonnative species attract abundant generalist bees in Maryland, USA, showing that nonnative plants can be beneficial even though they do not necessarily support the full native bee community (Seitz et al. 2020). Similarly, Marini’s article gathered data from Canada that showed that nonnative plant species were visited mostly by broadly ranging generalist pollinators. Bee communities visiting native and nonnative plants were distinct which raised concern about long-term habitat suitability for more specialized or regionally restricted bees (Martini et al. 2025). In contrast, Chrobock’s paper visits the relationship of plants and bee visitations in urban and semi-natural grassland sites (different habitats) in Switzerland. They found that nonnative ornamental plants showed high visitation in gardens but are disproportionately used by common generalist bees and provide weak support for specialist species (Chrobock et al. 2013). This was to highlight how visitation alone can mask underlying declines in specialists and shifts in community structure. These studies show native and nonnative plants often attract different sets of bee species and nonnative plants can facilitate the spread of invasive flora when bees support their reproduction. 
 
@@ -35,35 +40,40 @@ Martini, M., Kaul, E., Miller, R., Gibbs, J., & Bobiwash, K. (2025). Non-native 
 Seitz, N., vanEngelsdorp, D., & Leonhardt, S. D. (2020). Are native and non‐native pollinator friendly plants equally valuable for native wild bee communities? Ecology and Evolution, 10(23), 12838–12850. https://doi.org/10.1002/ece3.6826 
 
 
-### Paragraph 4 — Purpose & why now
+### Purpose & Why Now
 
 One key data combination is joining OBA lat and long with GEOHub polygons to filter to coastal ecoregions (listed as 1A and 1B). Another combination is joining OBA plant species with OregonFLora to create a native/nonnative column (where 1=native and 0=nonnative). Aggregating units to compute response variables per unit (bee abundance, bee richness , and species list) will be for composition analysis. Possibly adding percentages of cover for the plant species. AB testing will test whether the same set of bee species would visit plants if origin labels were random. These refined approaches can guide local restoration and planting decisions by choosing which plant species and plant origins best support diverse and abundant bee communities in coastal Oregon. This is needed now because the coast has unique and vulnerable coastal ecosystems where restoration and planting decisions are actively being made. OBA provides longer-term data and spatially distributed observations that let us connect patterns observed in other parts of the world across years and across the landscapes. This would provide regionally explicit evidence about which plant types best support bees. The results can directly inform restoration priorities (which native species to plant), roadside and land-management strategies, and policy decisions about invasive plant control, relevant for local conservation and agricultural pollination resilience.
 
 
-### Paragraph 5 — Hypotheses (directional) & brief rationale
+### Hypothesis & brief rationale
 
-- H1: I predict native plants will attract more bee species than nonnative plants in the coastal region because specialist bees evolved with native plant species. Native bees are more likely to recognize, forage efficiently on, and depend on native floral traits. 
-- H2: I predict native plants will attract more bees visits than nonnative plants in the coastal region because native plants typically provide more reliable and chemically familiar nectar and pollen resources for local bee communities. Native plant patches often integrate better into the surrounding coastal habitat, making them easier for bees to locate and repeatedly go to.
-
-I predict that coastal native plants will host a greater number of bee species and higher bee abundance compared to nonnative coastal plants. I predict that native bees will visit native coastal plants more frequently than nonnative plants and that nonnative bees will show no strong preference or be more generalized between plant types. The difference in bee visitation between native and nonnative plants will be strongest for specialist bee species in the coastal region. My questions are do native plants along the Oregon Coast support more bee species than nonnative plants and do bees differ in their visitation patterns to these plant groups.
+We predict native plants will attract more bee species than nonnative plants in the coastal region because specialist bees evolved with native plant species. Native bees are more likely to recognize, forage efficiently on, and depend on native floral traits. 
  
 
 ## Dataset identification
 
   We will be using two additional datasets to address our question. The first is a shapefile of Oregon ecoregion data from geohub.oregon.gov (https://geohub.oregon.gov/datasets/oregon-geo::oregon-ecoregions/explore?location=44.148189%2C-122.744817%2C8.00). The data was compiled by the United States Environmental Protection Agency, the National Health and Environmental Effects Research Laboratory (NHEERL), the U.S. Forest Service, the Natural Resources Conservation Service, the Washington State Department of Natural Resources, and the Oregon Natural Heritage Program working in collaboration. The attributes associated with the file are an object id for each polygon, its area, perimeter, three ecoregion codes, ecoregion name, a level 3 ecoregion code, a level 3 ecoregion name, the Oregon Natural Heritage Program code, the Oregon Natural Heritage Program name, a Nature Conservancy Region code, a Nature Conservancy Region name, shape area, and shape length. We will be using the "ECO" and "NAME" attributes, which are associated with small-scale Oregon ecoregions. 
   
-- Dataset A (URL/DOI): collector, methods, columns/units …
-- OBA → transformed to … (plan and rationale) …
+  The second dataset we’ll be using is from the Oregon Flora website (https://oregonflora.org), associated with the Oregon Flora Project, based at Oregon State University. The program has been collecting data on Oregon plants since 1994, and houses a database at the University. The data is not downloadable, but in the form of a plant genus/species search function that provides information about the species searched, including whether or not it is native. We will be searching this database by hand to identify which plant species in the coastal upland and coastal lowland regions are native and which are not.
 
-## Workflow plan (prose)
-1) Cleaning & validation:
-  First, with Oregon Ecoregions data from GEOHub (https://geohub.oregon.gov/datasets/oregon-geo::oregon-ecoregions/explore?location=44.166791%2C-122.744817%2C8.00) we'll subset the data to only contain observations from Oregon coastal areas 1a (Coastal Lowlands) and a2 (Coastal Uplands). Next, we'll make sure that each column contains only a single data type.
-2) Aggregations/derivations:
-  We'll add a column "native_plant" to our dataset that's TRUE if the plant is native to Oregon and FALSE if not and fill it with information obtained from Oregon Flora (oregonflora.org). We'll also add a "native_bee" column that's TRUE if the bee species is native to Oregon and FALSE if not. [Dr. Ponisio told me that there are few non-native bees besides the European honey bee, but we need a way to determine this. Or perhaps we could use only European honey bees (since they're the "big invasive") to stand-in for non-native bees.]
-3) Functions/loops (inputs → outputs): …  
+## Workflow plan
 
-4) Statistical test + programmatic implementation: 
-- I will use A/B testing and shuffle the labels to see if there is a statistical difference between the native and non-native plants. Use Shannon diversity. Richmond should be okay. 
+First, we'll read in the OBA and ecoregion shape files. Our objective for this initial part is to assign each observation (row) of our OBA data to the appropriate ecoregion. We'll do this by first transforming the longitude and latitude columns into sf objects with the st_as_sf() function, using WGS84 as the CRS. Next we'll reproject our .shp file to also be in WGS84. Finally, we'll join the two datasets on those sf objects using st_join(). At this point, each row of the OBA dataframe will also include its corresponding ecoregion. 
 
-5) Planned visualizations/tables: …  
-6) Risks & mitigations: …
+The second step will be to clear the dataframe of unwanted rows and columns. We'll start by subsetting our dataframe to only include rows whose ecoregions are 1a (coastal lowlands) or 1b (coastal uplands.) We'll also omit rows that are missing bee or plant species names, with the understanding that doing so will add uncertainty to our final conclusions, since there might be bias in which rows contain such information and which do not. Next, we'll keep only those columns containing the plant genus and species and the visiting bee genus and species. We'll then create a boolean row for whether the plant species is native or non-native, and populate it by hand with the data from the Oregon Flora website. In the end, we will have a dataset containing only plant-bee observations from Oregon coastal regions, with five columns (four string columns and one boolean column): bee genus, bee species, plant genus, plant species, and native/non-native plant identifier. 
+
+Finally, we'll check the unique values in each column to make sure each value is the correct type (genus/species/boolean).
+
+With the data in the proper format, we can conduct A/B testing to test our hypothesis that more bee species visit native plants than visit non-native plants. Our statistic will be the number of bee species that visit native plants minus the number of bee species that visit non-native plants. Our null hypothesis is that there is no difference in the number of bee species that visit native vs. non-native plants: if this is true, we would expect to see a statistic of 0.
+
+To calculate the statistic, we'll group the dataframe by the native/non-native plant column, count the number of distinct bee species that visit each, and take the difference.
+
+To conduct the A/B test, we'll shuffle the native/non-native column, then compute the statistic. We'll do this 10,000 times, then plot a histagram of the statistic results and calculate the p-value as the percentage of simulation values more extreme than our observed statistic.
+
+## Visualizations
+
+Our planned visualizations are 1) a table of native and non-native plants and the number of bee species that visit each (grouped by genus instead of species if the species list is too long), and 2) a plot of the histogram of our simulations and our observed statistic.
+
+## Limitations
+
+One of the expected limitations of our study is that, since volunteers made the majority of the OBA observations, it is possible that plants with showy flowers were sampled more than plants with inconspicuous flowers, and if there's a difference in which of these plants were native vs. non-native, it will skew our results. Another possible limitation is that the volunteers may have been more likely to sample in coastal regions that were easy to access rather than those that were remote. If the makeup of native and non-native plants was different between these two groups, it might bias the data. Finally, as mentioned above, since we dropped rows that were missing species names for either bees or flowers, then if there was a pattern, such as non-native plant species remaining unidentified more than native plant species, then our results may be biased. 
