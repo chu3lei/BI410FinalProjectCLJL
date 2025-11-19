@@ -8,3 +8,58 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+
+```{r}
+# read in oba data 
+
+library(readxl)
+
+suppressWarnings(oba <- read_excel("../OBA_2018-2024.xlsx"))
+
+```
+
+
+```{r}
+# look at column names, use decimalLatitude and decimalLongitude
+head(oba)
+```
+
+
+```{r}
+# read in geohub ecoregions data
+
+library(terra)
+library(sf)
+
+ecoregions_shp <- st_read("../ecoregion.shp")
+ecoregions_shp
+
+names(ecoregions_shp)
+
+#view data and see that we want to isolate the column "ECO" to 1A and 1B (for coastal regions)
+```
+```{r}
+# doing this in lab 
+oba
+
+sf_objects <- st_as_sf(oba,
+                      coords = c("decimalLongitude", "decimalLatitude"),
+                      crs = WGS84)
+
+# use crs = WGS84 because it most common CRS for long/lat data (used in GPS, Google Maps, etc.)
+```
+```{r}
+
+eco_vect <- vect(ecoregions_shp)
+r <- rast(ext(eco_vect), resolution =  1000) 
+raster_output <- rasterize(ecoregions_shp, r, field = "ECO")
+
+plot(raster_output)
+```
+
+
+```{r}
+coastal_oba <- oba %>% 
+```
+
