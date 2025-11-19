@@ -1,0 +1,10 @@
+---
+title: "BI410 Final Project"
+author: "Chu Lei & Jennifer Linnaea"
+date: "2025-19-11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
