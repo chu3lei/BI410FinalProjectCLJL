@@ -10,35 +10,45 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-```{r}
-# read in oba data 
-
+```{r load-libraries-lab, echo=FALSE, results="hide", message=FALSE, warning=FALSE}
+#Loading the libraries needed for the project.
+library(terra)
+library(ggplot2)
+library(dplyr)
+library(sf)
+library(ggspatial)
+library(RColorBrewer)
+library(viridisLite)
 library(readxl)
-
-suppressWarnings(oba <- read_excel("../OBA_2018-2024.xlsx"))
-
 ```
 
 
 ```{r}
-# look at column names, use decimalLatitude and decimalLongitude
+#We need two files for this project: 
+#1) The OBA data (csv file) #Note: identical dim() to the oba .xlsx file
+#2) The Oregon ecoregions data (polygon shape file)
+#Reading in the files:
+oba <- read.csv('../OBA_2018-2024.csv')
+ecoregions_shp <- st_read("../ecoregion_shp_data/ecoregion.shp")
+```
+
+
+```{r}
+#Visualizing the bee data. Use decimalLatitude and decimalLongitude as key
 head(oba)
 ```
 
 
 ```{r}
-# read in geohub ecoregions data
-
-library(terra)
-library(sf)
-
-ecoregions_shp <- st_read("../ecoregion.shp")
-ecoregions_shp
-
+#visualizing the ecoregions data
+str(ecoregions_shp)
 names(ecoregions_shp)
 
 #view data and see that we want to isolate the column "ECO" to 1A and 1B (for coastal regions)
 ```
+
+
+
 ```{r}
 # doing this in lab 
 oba
