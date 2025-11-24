@@ -160,6 +160,12 @@ coastal_oba
 #Mutating all instances of Brassica campestris to Brassica rapa
 coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Brassica campestris'] <- 'Brassica rapa'
 
+#I'm mutating Cuscata pacifica var. pacifica to simply Cuscata pacifica, since there are 
+#no other Cuscata pacifica varieties in the data 
+coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Cuscuta pacifica pacifica'] <- 'Cuscuta pacifica'
+
+#I'm also mutating Cuscuta salina to Cuscuta pacifica. Oregon flora redirects the former to the latter.
+coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Cuscuta salina'] <- 'Cuscuta pacifica'
 
 plant_sp_list <- sort(unique(coastal_oba$speciesPlant))
 plant_sp_list
@@ -267,10 +273,6 @@ coastal_oba$nativePlant[coastal_oba$speciesPlant == "Brassica rapa"] <- FALSE
 ```
 
 
-```{r}
-plant_sp_list
-
-```
 
 ```{r}
 #populating the new column for each unique plant species
@@ -349,11 +351,37 @@ coastal_oba$nativePlant[coastal_oba$speciesPlant == "Cosmos bipinnatus"] <- FALS
 #late cotoneaster or milkflower cotoneaster: exotic
 coastal_oba$nativePlant[coastal_oba$speciesPlant == "Cotoneaster coriaceus"] <- FALSE
 
-#start here with Crataegus monogyna
+#English hawthorn: exotic
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Crataegus monogyna"] <- FALSE
+
+#smooth hawksbeard: exotic
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Crepis capillaris"] <- FALSE
+
+#annual hawksbeard: exotic
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Crepis tectorum"] <- FALSE
+
+#Pacific salt marsh dodder: native
+#Note: I altered the data to change Cuscuta pacifica pacifica and 
+#Cuscuta salina to Cuscuta pacifica. They're synonymous in Oregon.
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Cuscuta pacifica"] <- TRUE
+
+#Scots broom: exotic
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Cytisus scoparius"] <- FALSE
+
+```
 
 
+```{r}
+plant_sp_list
 
+```
+
+
+```{r}
+#populating the new column for each unique plant species
+#this cell: genus names beginning with 'D'
 
 
 ```
+
 
