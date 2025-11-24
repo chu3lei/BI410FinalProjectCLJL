@@ -156,6 +156,14 @@ coastal_oba
 ```{r}
 #cell for cleaning and mutating plant names
 
+#The 'x' designation for hypbrids came through in this dataset as 'Ã—'. I'm going to change it to 'x'.
+#str_replace_all('Ã—', coastal_oba$speciesPlant, 'x') # so broken!
+#Note: figure this out. But in the meantime:
+coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Arctostaphylos Ã— media'] <- 'Arctostaphylos x media'
+coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Erica Ã— darleyensis'] <- 'Erica x darleyensis'
+coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Erysimum Ã— cheiri'] <- 'Erysimum x cheiri'
+
+
 #Note: Brassica campestris and Brassica rapa are synonyms. 
 #Mutating all instances of Brassica campestris to Brassica rapa
 coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Brassica campestris'] <- 'Brassica rapa'
@@ -166,6 +174,9 @@ coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Cuscuta pacifica pacifica'
 
 #I'm also mutating Cuscuta salina to Cuscuta pacifica. Oregon flora redirects the former to the latter.
 coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Cuscuta salina'] <- 'Cuscuta pacifica'
+
+#Altering the data to include the subspecies Epilobium ciliatum ciliatum in Epilobium ciliatum.
+coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Epilobium ciliatum ciliatum'] <- 'Epilobium ciliatum'
 
 plant_sp_list <- sort(unique(coastal_oba$speciesPlant))
 plant_sp_list
@@ -186,8 +197,8 @@ coastal_oba$nativePlant[coastal_oba$speciesPlant == "Abronia latifolia"] <- TRUE
 #common yarrow: this plant is listed as native _and_ exotic (?)
 coastal_oba$nativePlant[coastal_oba$speciesPlant == "Achillea millefolium"] <- TRUE
 
-#onion family, no common name given: this plant has no range data
-coastal_oba$nativePlant[coastal_oba$speciesPlant == "Allium cepa"] <- NA
+#common onion: exotic ('known exclusively from cultivation')
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Allium cepa"] <- FALSE
 
 #nodding onion: native
 coastal_oba$nativePlant[coastal_oba$speciesPlant == "Allium cernuum"] <- TRUE
@@ -216,8 +227,10 @@ coastal_oba$nativePlant[coastal_oba$speciesPlant == "Aquilegia vulgaris"] <- FAL
 #Pacific madrone: native
 coastal_oba$nativePlant[coastal_oba$speciesPlant == "Arbutus menziesii"] <- TRUE
 
-# Arctostaphylos Ã— media
-#I can't identify this species to clean the name. I'm going to leave it NA for now
+# Arctostaphylos x media: native
+#This is a naturally occurring hybrid between two native Oregon manzanitas:
+#Arctostaphylos columbiana and Arctostaphylos uva-ursi
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Arctostaphylos x media"] <- TRUE
 
 #hairy manzanita: native
 coastal_oba$nativePlant[coastal_oba$speciesPlant == "Arctostaphylos columbiana"] <- TRUE
@@ -379,9 +392,65 @@ plant_sp_list
 
 ```{r}
 #populating the new column for each unique plant species
-#this cell: genus names beginning with 'D'
+#this cell: genus names beginning with 'D' and 'E'
 
+#wild carrot (Queen Anne's lace): exotic
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Daucus carota"] <- FALSE
+
+#foxglove: exotic
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Digitalis purpurea"] <- FALSE
+
+#sticky cinquefoil: native
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Drymocallis glandulosa"] <- TRUE
+
+#fringed willowherb: native
+#Note: I altered the data to include the subspecies Epilobium ciliatum ciliatum in Epilobium ciliatum.
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Epilobium ciliatum"] <- TRUE
+
+#spring heath: exotic
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Erica carnea"] <- FALSE
+
+#bell heather: exotic
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Erica cinerea"] <- FALSE
+
+#Darley Dale heath: exotic
+#This is a hybrid between E. carnea and E. erigena
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Erica x darleyensis"] <- FALSE
+
+#Canadian fleabane: native
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Erigeron canadensis"] <- TRUE
+
+#seaside fleabane: native 
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Erigeron glaucus"] <- TRUE
+
+#seaside buckwheat: native
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Eriogonum latifolium"] <- TRUE
+
+#wallflower: exotic
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Erysimum x cheiri"] <- FALSE
+
+#large monkeyflower: native
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Erythranthe grandis"] <- TRUE
+
+#redclaws: exotic
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Escallonia rubra"] <- FALSE
+
+#California poppy: native
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Eschscholzia californica"] <- TRUE
+
+#ulmo: exotic
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Eucryphia cordifolia"] <- FALSE
+
+#wood spurge: exotic
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Euphorbia amygdaloides"] <- FALSE
 
 ```
+
+
+```{r}
+#populating the new column for each unique plant species
+#this cell: genus names beginning with 'F'
+```
+
 
 
