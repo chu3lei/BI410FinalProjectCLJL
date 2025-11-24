@@ -129,6 +129,231 @@ coastal_oba
 
 
 ```{r}
-?st_as_sf()
+#Next, we need to add a column that's TRUE if the plant species is native 
+#to Oregon, and FALSE if not. I'm going to populate this by hand with data from 
+#oregonflora.org
+
+#First, what are the unique plant species in our data?
+plant_sp_list <- sort(unique(coastal_oba$speciesPlant))
+plant_sp_list
+#length(plant_sp_list) #there are 204
+```
+
+
+```{r}
+#adding an empty column to hold the nativeplant value
+coastal_oba[, 'nativePlant'] = NA
+
+```
+
+```{r}
+#test of adding to the new column
+#this works and is the syntax for populating the nativePlant column
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Digitalis purpurea"] <- FALSE
+coastal_oba
+```
+
+```{r}
+#cell for cleaning and mutating plant names
+
+#Note: Brassica campestris and Brassica rapa are synonyms. 
+#Mutating all instances of Brassica campestris to Brassica rapa
+coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Brassica campestris'] <- 'Brassica rapa'
+
+
+plant_sp_list <- sort(unique(coastal_oba$speciesPlant))
+plant_sp_list
+```
+
+
+
+```{r}
+#note: some of the plant species names may need to be cleaned. if so, i'll do
+#that in a cell above this one
+#populating the new column for each unique plant species
+
+#this cell: genus names beginning with 'A'
+
+#yellow sand-verbena: native
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Abronia latifolia"] <- TRUE
+
+#common yarrow: this plant is listed as native _and_ exotic (?)
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Achillea millefolium"] <- TRUE
+
+#onion family, no common name given: this plant has no range data
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Allium cepa"] <- NA
+
+#nodding onion: native
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Allium cernuum"] <- TRUE
+
+#three-corner leek: exotic
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Allium triquetrum"] <- FALSE
+
+#Chinese leek: exotic
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Allium tuberosum"] <- FALSE
+
+#sugarstick: native
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Allotropa virgata"] <- TRUE
+
+#pearly everlasting: native
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Anaphalis margaritacea"] <- TRUE
+
+#Henderson's angelica: native
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Angelica hendersonii"] <- TRUE
+
+#seawatch: native
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Angelica lucida"] <- TRUE
+
+#common columbine: exotic
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Aquilegia vulgaris"] <- FALSE
+
+#Pacific madrone: native
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Arbutus menziesii"] <- TRUE
+
+# Arctostaphylos Ã— media
+#I can't identify this species to clean the name. I'm going to leave it NA for now
+
+#hairy manzanita: native
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Arctostaphylos columbiana"] <- TRUE
+
+#bearberry: native 
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Arctostaphylos uva-ursi"] <- TRUE
+
+#silverweed cinquefoil: native
+#synonym: Potentilla anserina (name not in dataset)
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Argentina anserina"] <- TRUE
+
+#Pacific silverweed: native
+#synonym: Potentilla anserina ssp. pacifica
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Argentina pacifica"] <- TRUE
+
+#Paris daisy: exotic
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Argyranthemum frutescens"] <- FALSE
+
+```
+
+
+
+```{r}
+#populating the new column for each unique plant species
+#this cell: genus names beginning with 'B'
+
+#chaparral broom: native
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Baccharis pilularis"] <- TRUE
+
+#yellow parentucellia: exotic
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Bellardia viscosa"] <- FALSE
+
+#English daisy: exotic
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Bellis perennis"] <- FALSE
+
+#tall Oregon grape: native
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Berberis aquifolium"] <- TRUE
+
+#Darwin's barberry: exotic
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Berberis darwinii"] <- FALSE
+
+#nodding beggars-ticks: native
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Bidens cernua"] <- TRUE
+
+#common borage: exotic
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Borago officinalis"] <- FALSE
+
+#field mustard: exotic
+#Note: Brassica campestris and Brassica rapa are synonyms. 
+#I mutated the data set: changed all instances of Brassica campestris to Brassica rapa
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Brassica rapa"] <- FALSE
+
+```
+
+
+```{r}
+plant_sp_list
+
+```
+
+```{r}
+#populating the new column for each unique plant species
+#this cell: genus names beginning with 'C'
+
+#American searocket: exotic
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Cakile edentula"] <- FALSE
+
+#European searocket: exotic
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Cakile maritima"] <- FALSE
+
+#calendula: exotic
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Calendula officinalis"] <- FALSE
+
+#Scotch heather: exotic
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Calluna vulgaris"] <- FALSE
+
+#hedge bindweed: exotic
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Calystegia sepium"] <- FALSE
+
+#coast morning-glory: native
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Calystegia soldanella"] <- TRUE
+
+#blue blossom: native
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Ceanothus thyrsiflorus"] <- TRUE
+
+#brown knapweed: exotic
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Centaurea jacea"] <- FALSE
+
+#mountain cornflower: exotic
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Centaurea montana"] <- FALSE
+
+#sticky mouse-ear chickweed: exotic
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Cerastium glomeratum"] <- FALSE
+
+#great willowherb: native
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Chamaenerion angustifolium"] <- TRUE
+
+#chickory: exotic
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Cichorium intybus"] <- FALSE
+
+#western water hemlock: native
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Cicuta douglasii"] <- TRUE
+
+#Canada thistle: exotic
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Cirsium arvense"] <- FALSE
+
+#edible thistle: native
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Cirsium edule"] <- TRUE
+
+#bull thistle: exotic
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Cirsium vulgare"] <- FALSE
+
+#farewell-to-spring: native
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Clarkia amoena"] <- TRUE
+
+#diamond clarkia: native
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Clarkia rhomboidea"] <- TRUE
+
+#candyflower: native
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Claytonia sibirica"] <- TRUE
+
+#large flowered blue eyed Mary: native
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Collinsia grandiflora"] <- TRUE
+
+#small flowered blue eyed Mary: native
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Collinsia parviflora"] <- TRUE
+
+#Pacific hemlock parsley: native
+##synonym: Conioselinum pacifica (name not in dataset)
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Conioselinum gmelinii"] <- TRUE
+
+#cosmos: exotic
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Cosmos bipinnatus"] <- FALSE
+
+#late cotoneaster or milkflower cotoneaster: exotic
+coastal_oba$nativePlant[coastal_oba$speciesPlant == "Cotoneaster coriaceus"] <- FALSE
+
+#start here with Crataegus monogyna
+
+
+
+
+
 ```
 
