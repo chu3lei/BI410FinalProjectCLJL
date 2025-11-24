@@ -12,6 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r load-libraries-lab, echo=FALSE, results="hide", message=FALSE, warning=FALSE}
 #Loading the libraries needed for the project.
+library(tidyr)
 library(terra)
 library(ggplot2)
 library(dplyr)
@@ -44,23 +45,10 @@ head(oba)
 str(ecoregions_shp)
 names(ecoregions_shp)
 
-#view data and see that we want to isolate the column "ECO" to 1A and 1B (for coastal regions)
 ```
 
-
-
 ```{r}
-# doing this in lab 
-oba
-
-sf_objects <- st_as_sf(oba,
-                      coords = c("decimalLongitude", "decimalLatitude"),
-                      crs = WGS84)
-
-# use crs = WGS84 because it most common CRS for long/lat data (used in GPS, Google Maps, etc.)
-```
-```{r}
-
+#Visualizing the ecoregions data part 2: A map of Oregon ecoregions
 eco_vect <- vect(ecoregions_shp)
 r <- rast(ext(eco_vect), resolution =  1000) 
 raster_output <- rasterize(ecoregions_shp, r, field = "ECO")
@@ -69,7 +57,78 @@ plot(raster_output)
 ```
 
 
+For this project, we will be using only bee-plant interactions that occurred in coastal regions of Oregon, specifically region 1.a. Coastal Lowlands and 1.b. Coastal Uplands. However, the oba data does not have a column representing ecoregion that would allow us to subset the data. So we will join the oba data with the ecoregions data. To do this, it will be helpful to know the coordinate reference system used for the location data in the oba dataset. According to Dr. Ponisio, it is: DATUM: WGS84, unprojected lat long. EPSG code: 4326. 
+
+
 ```{r}
-coastal_oba <- oba %>% 
+#The first step in joining the two datasets is to convert the oba data into a spatial object. We'll do so using st_as_sf()
+#Note: 'sf' stands for 'simple features'
+
+#However, the function will not accept data that has missing coordinate values, and ours does. So we will need remove any rows in the dataframe that don't have latitude and longitude values. 
+
+sum(is.na(oba$decimalLongitude)) #there are 36
+sum(is.na(oba$decimalLatitude)) #there are 36
+
+oba_sf <- oba %>% drop_na(c(decimalLongitude, decimalLatitude))
+
+oba_sf <- st_as_sf(oba_sf, coords = c("decimalLongitude", "decimalLatitude"), crs = 4326)
+
+```
+
+
+```{r}
+#Next, we need to check if ecoregions_shp is in WGS84 (EPSG:4326) and if not, reproject it
+st_crs(ecoregions_shp) == st_crs(oba_sf) #FALSE before the reprojection
+oba_sf <- st_transform(oba_sf, st_crs(ecoregions_shp))
+st_crs(ecoregions_shp) == st_crs(oba_sf) #TRUE after the reprojection
+```
+
+
+```{r}
+#Now that the two sf objects have the same projection, we can join them.
+#Note: The argument 'join=st_intersects' says that each point in the oba
+#dataset will be assigned to the polygon(ecoregion) it lies within
+oba_with_ecoregions_sf <- st_join(oba_sf, ecoregions_shp, join = st_intersects)
+head(oba_with_ecoregions_sf)
+```
+
+
+
+```{r}
+#Now there is an ecoregion assigned to each observation.
+#However,for now, a regular dataframe will be easier to work with.
+#Converting oba data back to a dataframe:
+oba_with_ecoregions <- oba_with_ecoregions_sf |> st_drop_geometry()
+head(oba_with_ecoregions)
+```
+
+```{r}
+#test cell. 
+#observing the ecoregion column
+oba_with_ecoregions$ECO
+#Chu it worked it worked!
+```
+
+Now that we have successfully joined the data, we can subset it to only the coastal regions 1a and 1b.
+
+```{r}
+#subsetting to coastal data only (ecoregions 1a (coastal lowlands) and 1b (coastal uplands))
+
+coastal_oba <- subset(oba_with_ecoregions, ECO == '1a' | ECO == '1b')
+coastal_oba
+```
+
+
+
+
+
+```{r}
+#Start here with next steps.
+#Suggestions: drop unwanted columns
+```
+
+
+```{r}
+?st_as_sf()
 ```
 
