@@ -173,6 +173,8 @@ coastal_oba
 coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Arctostaphylos Ã— media'] <- 'Arctostaphylos x media'
 coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Erica Ã— darleyensis'] <- 'Erica x darleyensis'
 coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Erysimum Ã— cheiri'] <- 'Erysimum x cheiri'
+coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Leucanthemum Ã— superbum'] <- 'Leucanthemum x superbum'
+coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Spiraea Ã— vanhouttei'] <- 'Spiraea x vanhouttei'
 
 
 #Note: Brassica campestris and Brassica rapa are synonyms. 
