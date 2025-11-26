@@ -30,7 +30,9 @@ library(readxl)
 #2) The Oregon ecoregions data (polygon shape file)
 #Reading in the files:
 oba <- read.csv('../OBA_2018-2024.csv')
-ecoregions_shp <- st_read("../ecoregion_shp_data/ecoregion.shp")
+# Jennifer ecoregions_shp <- st_read("../ecoregion_shp_data/ecoregion.shp")
+# Chu 
+ecoregions_shp <- st_read("../ecoregion.shp")
 ```
 
 
@@ -137,6 +139,12 @@ coastal_oba
 plant_sp_list <- sort(unique(coastal_oba$speciesPlant))
 plant_sp_list
 #length(plant_sp_list) #there are 204
+
+to.list(plant_sp_list)
+
+install.packages("writexl")
+library(writexl)
+write_xlsx(data.frame(Species = plant_sp_list, "../Desktop/Bi410L")
 ```
 
 
