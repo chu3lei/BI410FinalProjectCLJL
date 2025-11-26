@@ -142,9 +142,79 @@ plant_sp_list
 
 to.list(plant_sp_list)
 
+# excel file of native or nonnative plants
 install.packages("writexl")
 library(writexl)
 write_xlsx(data.frame(Species = plant_sp_list, "../Desktop/Bi410L")
+
+install.packages("readxl")
+library(readxl)
+df <- read_excel("../BI410FinalProjectCLJL/plant_species_list.xlsx", sheet = "Sheet1") 
+
+names(df)
+names(coastal_oba)
+
+names(df)[names(df) == "Species"] <- "speciesPlant"
+
+merged_df <- coastal_oba %>%
+  left_join(df, by = "speciesPlant") 
+
+names(merged_df)
+            
+clean_df <- merged_df %>%
+  select(speciesPlant, IsNative, genus, specificEpithet)
+
+summary(clean_df)
+
+clean_df$bee_species <- paste(clean_df$genus, clean_df$specificEpithet)
+
+
+
+obs <- clean_df %>%
+  group_by(IsNative) %>%
+  summarise(n_bee_species = n_distinct(bee_species))
+
+obs_stat <- obs$n_bee_species[obs$IsNative == TRUE] -
+            obs$n_bee_species[obs$IsNative == FALSE]
+
+
+
+  
+```
+```{r}
+
+test <- clean_df %>%
+  mutate(IsNative_shuffled = sample(IsNative)) %>%
+  group_by(IsNative_shuffled) %>%
+  summarise(n_bee_species = n_distinct(bee_species))
+
+test
+
+
+
+set.seed(1)
+
+n_sim <- 1000
+sim_stats <- numeric(n_sim)
+
+for (i in 1:n_sim) {
+
+  shuffled <- clean_df %>% 
+    mutate(IsNative_shuffled = sample(IsNative))
+
+  stat_tbl <- shuffled %>%
+    group_by(IsNative_shuffled) %>%
+    summarise(n_bee_species = n_distinct(bee_species))
+
+  sim_stats[i] <- stat_tbl$n_bee_species[stat_tbl$IsNative_shuffled == TRUE] -
+                  stat_tbl$n_bee_species[stat_tbl$IsNative_shuffled == FALSE]
+}
+
+hist(sim_stats,
+     main = "Permutation test: distribution of (bee species visiting native - non-native)",
+     xlab = "Difference in number of bee species (Native - Non-native)")
+abline(v = obs_stat, col = "red", lwd = 2)
+legend("topright", legend = paste("Observed =", obs_stat), col = "red")
 ```
 
 
