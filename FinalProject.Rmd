@@ -30,11 +30,9 @@ library(readxl)
 #2) The Oregon ecoregions data (polygon shape file)
 #Reading in the files:
 oba <- read.csv('../OBA_2018-2024.csv')
-
-ecoregions_shp <- st_read("../ecoregion_shp_data/ecoregion.shp") # Jennifer 
-
-#ecoregions_shp <- st_read("../ecoregion.shp") # Chu 
-
+# Jennifer ecoregions_shp <- st_read("../ecoregion_shp_data/ecoregion.shp")
+# Chu 
+ecoregions_shp <- st_read("../ecoregion.shp")
 ```
 
 
@@ -142,8 +140,8 @@ plant_sp_list <- sort(unique(coastal_oba$speciesPlant))
 plant_sp_list
 #length(plant_sp_list) #there are 204
 
+to.list(plant_sp_list)
 
-<<<<<<< HEAD
 # excel file of native or nonnative plants
 install.packages("writexl")
 library(writexl)
@@ -152,6 +150,7 @@ write_xlsx(data.frame(Species = plant_sp_list, "../Desktop/Bi410L")
 install.packages("readxl")
 library(readxl)
 df <- read_excel("../BI410FinalProjectCLJL/plant_species_list.xlsx", sheet = "Sheet1") 
+
 
 names(df)
 names(coastal_oba)
@@ -190,7 +189,7 @@ test <- clean_df %>%
   group_by(IsNative_shuffled) %>%
   summarise(n_bee_species = n_distinct(bee_species))
 
-test
+
 
 
 
@@ -217,13 +216,6 @@ hist(sim_stats,
      xlab = "Difference in number of bee species (Native - Non-native)")
 abline(v = obs_stat, col = "red", lwd = 2)
 legend("topright", legend = paste("Observed =", obs_stat), col = "red")
-=======
-
-#I think this only needed to be done once to extract the data
-#install.packages("writexl")
-#library(writexl)
-#write_xlsx(data.frame(Species = plant_sp_list, "../Desktop/Bi410L")
->>>>>>> 3a680a921e6aea65bfc18e2a30592ef5cae80bdc
 ```
 
 
@@ -249,8 +241,6 @@ coastal_oba
 coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Arctostaphylos Ã— media'] <- 'Arctostaphylos x media'
 coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Erica Ã— darleyensis'] <- 'Erica x darleyensis'
 coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Erysimum Ã— cheiri'] <- 'Erysimum x cheiri'
-coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Leucanthemum Ã— superbum'] <- 'Leucanthemum x superbum'
-coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Spiraea Ã— vanhouttei'] <- 'Spiraea x vanhouttei'
 
 
 #Note: Brassica campestris and Brassica rapa are synonyms. 
@@ -266,23 +256,6 @@ coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Cuscuta salina'] <- 'Cuscu
 
 #Altering the data to include the subspecies Epilobium ciliatum ciliatum in Epilobium ciliatum.
 coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Epilobium ciliatum ciliatum'] <- 'Epilobium ciliatum'
-
-#Altering the data to include the subspecies Grindelia stricta stricta in Grindelia stricta.
-coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Grindelia stricta stricta'] <- 'Grindelia stricta'
-
-#Altering the data to include the subspecies Lotus pedunculatus pedunculatus in Lotus pedunculatus.
-coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Lotus pedunculatus pedunculatus'] <- 'Lotus pedunculatus'
-
-#Note: Rubus armeniacus and Rubus bifrons are synonyms. 
-#Mutating all instances of Rubus bifrons to Rubus armeniacus
-coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Rubus bifrons'] <- 'Rubus armeniacus'
-
-#Note: Solidago elongata and Solidago canadensis are synonyms. 
-#Mutating all instances of Solidago canadensis to Solidago elongata
-coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Solidago canadensis'] <- 'Solidago elongata'
-
-#Altering the data to include the subspecies Solidago spathulata spathulata in Solidago spathulata.
-coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Solidago spathulata spathulata'] <- 'Solidago spathulata'
 
 plant_sp_list <- sort(unique(coastal_oba$speciesPlant))
 plant_sp_list
