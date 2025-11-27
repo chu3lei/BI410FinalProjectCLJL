@@ -125,8 +125,7 @@ coastal_oba
 
 
 ```{r}
-#Start here with next steps.
-#Suggestions: drop unwanted columns
+#Here we can drop unwanted columns
 ```
 
 
@@ -137,22 +136,24 @@ coastal_oba
 
 #First, what are the unique plant species in our data?
 plant_sp_list <- sort(unique(coastal_oba$speciesPlant))
-plant_sp_list
 #length(plant_sp_list) #there are 204
+#We used these names to create an excel file, and hand-populated an IsNative 
+#column with Boolean values. Native = TRUE, Non-native = FALSE
+
+#reading in the excel table of native/non-native plant species information
+isnative_table <- read_excel("../BI410FinalProjectCLJL/plant_species_list.xlsx", sheet = "Sheet1") 
 
 
-#install.packages("readxl")
-library(readxl)
-df <- read_excel("../BI410FinalProjectCLJL/plant_species_list.xlsx", sheet = "Sheet1") 
+#names(isnative_table) #Species, IsNative, Common Name
+#names(coastal_oba) #Plant species column is called "speciesPlant"
 
+#Since the columns we want to merge these files on have different names,
+#we'll change the name of isnative_table to match our OBA plant sp. column name:
+names(isnative_table)[names(isnative_table) == "Species"] <- "speciesPlant"
 
-names(df)
-names(coastal_oba)
-
-names(df)[names(df) == "Species"] <- "speciesPlant"
 
 merged_df <- coastal_oba %>%
-  left_join(df, by = "speciesPlant") 
+  left_join(isnative_table, by = "speciesPlant") 
 
 names(merged_df)
             
@@ -214,8 +215,9 @@ legend("topright", legend = paste("Observed =", obs_stat), col = "red")
 
 
 ```{r}
+#this is old. Will delete soon
 #adding an empty column to hold the nativeplant value
-coastal_oba[, 'nativePlant'] = NA
+#coastal_oba[, 'nativePlant'] = NA
 
 ```
 
