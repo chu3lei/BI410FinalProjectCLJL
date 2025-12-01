@@ -486,11 +486,69 @@ nonnative_df
 
 ```{r}
 #Second, following the example of demo 6-3vis, we should create an adjacency matrix for each data frame
+#First I'll do the bee/native plant relationship
+nat_beeplant_adj <- table(native_df)
+nat_beeplant_adj <- unclass(nat_beeplant_adj) #the adjacency matrix
 
 #Third, convert the adj matrix to an igraph bipartite adjacency matrix (need igraph package)
-#4th, 
+g_nat_beeplant <- graph_from_biadjacency_matrix(nat_beeplant_adj,
+                                           weighted =TRUE)
+
+#4th, put in in a from we can give to sankeyNetwork
+### find modules
+mod_nat_gplant <- cluster_walktrap(g_nat_beeplant)
+### assign vertices to modules
+groups <- membership(mod_nat_gplant)
+
+### convert to a network 3d object
+g_nat_beeplant_net3d <- igraph_to_networkD3(g_nat_beeplant, group=groups, 
+                                       what = "both")
 
 
+```
+
+```{r}
+#Graph of bee sp./native plant network
+sankeyNetwork(Links = g_nat_beeplant_net3d$links,
+             Nodes = g_nat_beeplant_net3d$nodes,
+            Source = "source", Target = "target",
+            Value = "value",  NodeID = "name", 
+            nodePadding = 0, height = 5000)
+```
+
+
+
+```{r}
+#
+#Next I'll do the bee/non-native plant relationship
+nonnat_beeplant_adj <- table(nonnative_df)
+nonnat_beeplant_adj <- unclass(nonnat_beeplant_adj) #the adjacency matrix
+
+#Third, convert the adj matrix to an igraph bipartite adjacency matrix (need igraph package)
+g_nonnat_beeplant <- graph_from_biadjacency_matrix(nonnat_beeplant_adj,
+                                           weighted =TRUE)
+
+#4th, put in in a from we can give to sankeyNetwork
+### find modules
+mod_nonnat_gplant <- cluster_walktrap(g_nonnat_beeplant)
+### assign vertices to modules
+groups2 <- membership(mod_nonnat_gplant)
+
+### convert to a network 3d object
+g_nonnat_beeplant_net3d <- igraph_to_networkD3(g_nonnat_beeplant, group=groups2, 
+                                       what = "both")
+
+
+```
+
+
+```{r}
+#Graph of bee sp./non-native plant network
+sankeyNetwork(Links = g_nonnat_beeplant_net3d$links,
+             Nodes = g_nonnat_beeplant_net3d$nodes,
+            Source = "source", Target = "target",
+            Value = "value",  NodeID = "name", 
+            nodePadding = 0, height = 5000)
 ```
 
 
