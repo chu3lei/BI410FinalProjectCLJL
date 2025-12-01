@@ -470,10 +470,9 @@ bees_on_nonnatives
 ```
 
 ```{r}
-# have another idea. I want to visualize the relationships of bees to native and non-native plants. It would be fantastic to have a graph like the one on the oba website. Can we do this? 
+# have another idea. I want to visualize the relationships of bees to native and non-native plants. It would be fantastic to have a graph like the one on the oba website. Can we do this? Yes! (I did it)
 #First, we would need to splint the data into two separate data frames.
 #moving the bee_sp to the first column:
-#move column 'points' to first position
 clean_df <- clean_df %>% select(bee_species, everything())
 #create two dataframes and then drop the IsNative column
 native_df <- clean_df[clean_df$IsNative == TRUE,]
@@ -481,7 +480,7 @@ nonnative_df <- clean_df[clean_df$IsNative == FALSE,]
 
 native_df <- native_df %>% select(c(bee_species,speciesPlant))
 nonnative_df <- nonnative_df %>% select(c(bee_species,speciesPlant))
-nonnative_df
+head(nonnative_df)
 ```
 
 ```{r}
