@@ -2,7 +2,9 @@
 title: "BI410 Final Project"
 author: "Chu Lei & Jennifer Linnaea"
 date: "2025-19-11"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -12,6 +14,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r load-libraries-lab, echo=FALSE, results="hide", message=FALSE, warning=FALSE}
 #Loading the libraries needed for the project.
+
 library(tidyr)
 library(terra)
 library(ggplot2)
@@ -21,7 +24,9 @@ library(ggspatial)
 library(RColorBrewer)
 library(viridisLite)
 library(readxl)
+library(writexl)
 library(stringr)
+library(waldo)
 ```
 
 
@@ -108,7 +113,7 @@ head(oba_with_ecoregions)
 ```{r}
 #test cell. 
 #observing the ecoregion column
-oba_with_ecoregions$ECO
+head(oba_with_ecoregions$ECO)
 #Chu it worked it worked!
 ```
 
@@ -118,7 +123,7 @@ Now that we have successfully joined the data, we can subset it to only the coas
 #subsetting to coastal data only (ecoregions 1a (coastal lowlands) and 1b (coastal uplands))
 
 coastal_oba <- subset(oba_with_ecoregions, ECO == '1a' | ECO == '1b')
-coastal_oba
+head(coastal_oba)
 ```
 
 
@@ -263,7 +268,9 @@ clean_df <- clean_df %>%
 head(clean_df)
 ```
 
-Now that we've combined the bee genus/species into a single column, we can easily remove nonnative bee species, the presence of which will bias our results (since our hypothesis only applies to native bee species). In addition, since our statistic is a difference in number of bee species, we need to remove rows with absent bee species or with only genus information.
+Now that we've combined the bee genus/species into a single column, we can easily remove nonnative bee species, the presence of which will bias our results (since our hypothesis only applies to native bee species). In addition, since our statistic is a difference in number of bee species, we need to remove rows with absent bee species or with only genus information. 
+
+However, removing genus-only values must be done carefully. See discussion in the code comments below.
 
 ```{r}
 #remove Apis mellifera, the European honey bee
@@ -275,66 +282,69 @@ clean_df <- clean_df[clean_df$bee_species != "Apis mellifera",]
 #from the bee_species column
 clean_df$bee_species <- trimws(clean_df$bee_species)
 sort(unique(clean_df$bee_species[clean_df$IsNative == TRUE]))
+sort(unique(clean_df$bee_species[clean_df$IsNative == FALSE]))
 ```
 
 ```{r}
-#Note: If a genus-only name is the _only_ observation of any species in that genus, I will count it as one species. But if a genus-only name is in addition to specific genus names, I will remove the genus-only name from the data set. The assumption here, which may not be correct, is that genus-only observations are of species there are already observations for, and not an additional unidentified species of that genus
+#Note: Because we care about the number of bee species visiting native vs. non-native bees, I will remove the genus-only values as follows: 
 
-#by inspecting a list of unique bee species values, I see that I need to remove these genus-only values:
+#First I will get lists of unique bee_species values for both IsNative == TRUE and IsNative == FALSE. Second, for each of these lists _separately_:
+
+#If a genus-only name is the _only_ observation of any species in that genus, I will count it as one species. But if a genus-only name is in addition to specific genus names, I will remove the genus-only name from the data set. The assumption here, which may not be correct, is that genus-only observations are of species there are already observations for, and not an additional unidentified species of that genus. The reason I am splitting the bee_species values into native/nonnative plant lists is because if a unique species is shown in one list but only a genus name is shown in the other, I want to count both of those as one species visiting one plant, because in the latter case it is known that some individual from that genus visited - that their species was unknown is no reason to say that _no_ species visited the plant.
+
+# By examining these lists, I see that I need to remove these genus-only values:
 #""
 #sum(clean_df$bee_species == "") #398 of these!
 clean_df <- clean_df[clean_df$bee_species != "",]
-#dim(clean_df) #2039 rows remaining
 
 #Andrena
 #sum(clean_df$bee_species == "Andrena") #71 of these
 clean_df <- clean_df[clean_df$bee_species != "Andrena",]
-#dim(clean_df) #1968 rows remaining
 
 #Anthidium
 #sum(clean_df$bee_species == "Anthidium") #35 of these
 clean_df <- clean_df[clean_df$bee_species != "Anthidium",]
-#dim(clean_df) #1933 rows remaining
+
+#"Anthophora"
+#sum(clean_df$bee_species == "Anthophora") #2 of these
+clean_df <- clean_df[clean_df$bee_species != "Anthophora",]
 
 #Ceratina
 #sum(clean_df$bee_species == "Ceratina") #5 of these
 clean_df <- clean_df[clean_df$bee_species != "Ceratina",]
-#dim(clean_df) #1928 rows remaining
 
 #Coelioxys
 #sum(clean_df$bee_species == "Coelioxys") #8 of these
 clean_df <- clean_df[clean_df$bee_species != "Coelioxys",]
-#dim(clean_df) #1920 rows remaining
 
 #Colletes
 #sum(clean_df$bee_species == "Colletes") #37 of these
 clean_df <- clean_df[clean_df$bee_species != "Colletes",]
-#dim(clean_df) #1883 rows remaining
 
 #Habropoda
 #sum(clean_df$bee_species == "Habropoda") #48 of these
 clean_df <- clean_df[clean_df$bee_species != "Habropoda",]
-#dim(clean_df) #1835 rows remaining
 
 #Halictus
 #sum(clean_df$bee_species == "Halictus") #16 of these
 clean_df <- clean_df[clean_df$bee_species != "Halictus",]
-#dim(clean_df) #1819 rows remaining
 
 #Lasioglossum
 #sum(clean_df$bee_species == "Lasioglossum") #291 of these. That's a lot.
 clean_df <- clean_df[clean_df$bee_species != "Lasioglossum",]
-#dim(clean_df) #1528 rows remaining
 
 #Megachile
 #sum(clean_df$bee_species == "Megachile") #61 of these
 clean_df <- clean_df[clean_df$bee_species != "Megachile",]
-#dim(clean_df) #1467 rows remaining
 
 #Melissodes
 #sum(clean_df$bee_species == "Melissodes") #35 of these
 clean_df <- clean_df[clean_df$bee_species != "Melissodes",]
-#dim(clean_df) #1432 rows remaining
+
+#Osmia
+#Since Osmia should be kept in the native=True list and removed in the native=false list,
+#I'll deal with it separately when calculating the statistic.
+#Note: Doing this doesn't change whether we reject the null.
 
 #Sphecodes
 #sum(clean_df$bee_species == "Sphecodes") #18 of these
@@ -382,7 +392,9 @@ print(obs)
  #           obs$n_bee_species[obs$IsNative == FALSE][1]
 
 obs_stat <- (obs$n_bee_species[obs$IsNative == TRUE][1] * relative_native) -
-  (obs$n_bee_species[obs$IsNative == FALSE][1] * relative_nonnative)
+  ((obs$n_bee_species[obs$IsNative == FALSE][1] - 1) * relative_nonnative - 1)#this minus
+#one is because the Osmia genus-only value should be kept in TRUE (it's the only
+#Osmia) and removed in False (there's an individual species in addition to genus-only)
 
 obs_stat 
 ```
@@ -395,8 +407,6 @@ test <- clean_df %>%
   mutate(IsNative_shuffled = sample(IsNative)) %>%
   group_by(IsNative_shuffled) %>%
   summarise(n_bee_species = n_distinct(bee_species))
-
-
 
 
 
@@ -444,8 +454,18 @@ With this very high p-value, we fail to reject the null hypothesis that the numb
 #I'm now going to investigate which bees are visiting which plants.
 
 #bee species that were seen visiting natives 
-sort(unique(clean_df$bee_species[clean_df$IsNative == TRUE]))
+bees_on_natives <- sort(unique(clean_df$bee_species[clean_df$IsNative == TRUE]))
+bees_on_nonnatives <- sort(unique(clean_df$bee_species[clean_df$IsNative == FALSE]))
+#waldo::compare(bees_on_natives, bees_on_nonnatives) #whew I don't understand this xD
+bees_on_natives
+bees_on_nonnatives
+#all_bees <- sort(unique(clean_df$bee_species))
 ```
 
+[Chu - let's take a look at these two lists and go from there.]
 
+```{r}
+#Idea: make an excel file
+#write_xlsx(all_bees, "./bee_species.xlsx") #doesn't yet work. need to get in correct format
+```
 
