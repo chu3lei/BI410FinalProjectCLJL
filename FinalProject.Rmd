@@ -21,6 +21,7 @@ library(ggspatial)
 library(RColorBrewer)
 library(viridisLite)
 library(readxl)
+library(stringr)
 ```
 
 
@@ -241,10 +242,16 @@ summary(clean_df)
 #Will check this:
 sum(clean_df$speciesPlant == "") #937
 #As expected, there are 937 rows without a species name. 
+#Note: that's almost 28 percent of observations! 
 
 #To do the A/B analysis, we will have to drop the rows without species names.
 #However, this may introduce bias into our analysis if these rows are not 
 #random but are a certain subset of the collections.
+#The clean_df is 3398 rows long with NAs. Once removed, it should be 2461 rows
+
+clean_df <- clean_df[clean_df$speciesPlant != "",]
+dim(clean_df) #2461 x 4
+head(clean_df)
 ```
 
 
@@ -256,37 +263,134 @@ clean_df <- clean_df %>%
 head(clean_df)
 ```
 
+Now that we've combined the bee genus/species into a single column, we can easily remove nonnative bee species, the presence of which will bias our results (since our hypothesis only applies to native bee species). In addition, since our statistic is a difference in number of bee species, we need to remove rows with absent bee species or with only genus information.
+
+```{r}
+#remove Apis mellifera, the European honey bee
+sum(clean_df$bee_species == "Apis mellifera") #There are only 24 observations of this bee
+clean_df <- clean_df[clean_df$bee_species != "Apis mellifera",]
+#dim(clean_df) #2437 rows remaining
+
+#To ease the data cleaning, I'm going to strip leading and trailing whitespace
+#from the bee_species column
+clean_df$bee_species <- trimws(clean_df$bee_species)
+sort(unique(clean_df$bee_species[clean_df$IsNative == TRUE]))
+```
+
+```{r}
+#Note: If a genus-only name is the _only_ observation of any species in that genus, I will count it as one species. But if a genus-only name is in addition to specific genus names, I will remove the genus-only name from the data set. The assumption here, which may not be correct, is that genus-only observations are of species there are already observations for, and not an additional unidentified species of that genus
+
+#by inspecting a list of unique bee species values, I see that I need to remove these genus-only values:
+#""
+#sum(clean_df$bee_species == "") #398 of these!
+clean_df <- clean_df[clean_df$bee_species != "",]
+#dim(clean_df) #2039 rows remaining
+
+#Andrena
+#sum(clean_df$bee_species == "Andrena") #71 of these
+clean_df <- clean_df[clean_df$bee_species != "Andrena",]
+#dim(clean_df) #1968 rows remaining
+
+#Anthidium
+#sum(clean_df$bee_species == "Anthidium") #35 of these
+clean_df <- clean_df[clean_df$bee_species != "Anthidium",]
+#dim(clean_df) #1933 rows remaining
+
+#Ceratina
+#sum(clean_df$bee_species == "Ceratina") #5 of these
+clean_df <- clean_df[clean_df$bee_species != "Ceratina",]
+#dim(clean_df) #1928 rows remaining
+
+#Coelioxys
+#sum(clean_df$bee_species == "Coelioxys") #8 of these
+clean_df <- clean_df[clean_df$bee_species != "Coelioxys",]
+#dim(clean_df) #1920 rows remaining
+
+#Colletes
+#sum(clean_df$bee_species == "Colletes") #37 of these
+clean_df <- clean_df[clean_df$bee_species != "Colletes",]
+#dim(clean_df) #1883 rows remaining
+
+#Habropoda
+#sum(clean_df$bee_species == "Habropoda") #48 of these
+clean_df <- clean_df[clean_df$bee_species != "Habropoda",]
+#dim(clean_df) #1835 rows remaining
+
+#Halictus
+#sum(clean_df$bee_species == "Halictus") #16 of these
+clean_df <- clean_df[clean_df$bee_species != "Halictus",]
+#dim(clean_df) #1819 rows remaining
+
+#Lasioglossum
+#sum(clean_df$bee_species == "Lasioglossum") #291 of these. That's a lot.
+clean_df <- clean_df[clean_df$bee_species != "Lasioglossum",]
+#dim(clean_df) #1528 rows remaining
+
+#Megachile
+#sum(clean_df$bee_species == "Megachile") #61 of these
+clean_df <- clean_df[clean_df$bee_species != "Megachile",]
+#dim(clean_df) #1467 rows remaining
+
+#Melissodes
+#sum(clean_df$bee_species == "Melissodes") #35 of these
+clean_df <- clean_df[clean_df$bee_species != "Melissodes",]
+#dim(clean_df) #1432 rows remaining
+
+#Sphecodes
+#sum(clean_df$bee_species == "Sphecodes") #18 of these
+clean_df <- clean_df[clean_df$bee_species != "Sphecodes",]
+#dim(clean_df) #1414 rows remaining
+```
+
+
+The last thing we need to do before running the A/B test is to account for the fact that the number of observations of bees on native flowers and the number of observations on nonnative flowers might be substantially different. If so, we'll need to standardize the data.
+
+
+```{r}
+#Checking how many be observations are on native vs. non-native flowers
+native_obs_count <- sum(clean_df$IsNative == TRUE)
+nonnative_obs_count <- sum(clean_df$IsNative == FALSE)
+clean_df_row_number <- length(clean_df$IsNative)
+native_percent <- round(native_obs_count/clean_df_row_number,2) * 100
+nonnative_percent <- round(nonnative_obs_count/clean_df_row_number,2) * 100
+print(paste("Percent of bee observations on native flowers:", native_percent))
+print(paste("Percent of bee observations on native flowers:", nonnative_percent))
+
+#need to also do this without multiplying by 100 for the step below
+relative_native <- round(native_obs_count/clean_df_row_number,2)
+relative_nonnative <- round(nonnative_obs_count/clean_df_row_number,2)
+```
+
+So we see that the number of observations is relatively equal. Nevertheless, it won't hurt to standardize the statistic. 
+
+Statistic used: (number of bee spp. on native plants * proportion of observations involving native plants) - (number of bee spp. on nonnative plants * proportion of observations involving nonnative plants)
 
 ```{r}
 #Calculating the statistic:
 #To Chu. 11/28/25: Our statistic may be flawed because we didn't account for the number
 #of _observations_ on native vs. nonnative flowers? As Dr. Ponisio said, we may need to standardize. But for now I'll leave it
+#To Chu 11/30/25. I'm going to standardize the statistic to see if it changes our results any. I'll do this my multiplying the number of bee species on native plants by the proportion of observations on native plants, and doing the same thing for bee spp. on nonnatives. I'll leave your code unchanged and comment it out, so that we can revert easily.
 
 
 obs <- clean_df %>%
   group_by(IsNative) %>%
   summarise(n_bee_species = n_distinct(bee_species))
 
-print(obs) #This is interesting. There were 74 bee spp. seen on nonnative plant
-#species and 73 bee sp. seen on native plant species. The number of bee species 
-#seen on NA plants was 76, which is too bad as we're going to lose data from a 
-#couple of bee spp. entirely when we drop NA rows.
+print(obs) 
 
-obs_stat <- obs$n_bee_species[obs$IsNative == TRUE][1] -
-            obs$n_bee_species[obs$IsNative == FALSE][1]
+#obs_stat <- obs$n_bee_species[obs$IsNative == TRUE][1] -
+ #           obs$n_bee_species[obs$IsNative == FALSE][1]
 
-obs_stat #is -1 NA unless I subset in the line above
+obs_stat <- (obs$n_bee_species[obs$IsNative == TRUE][1] * relative_native) -
+  (obs$n_bee_species[obs$IsNative == FALSE][1] * relative_nonnative)
+
+obs_stat 
 ```
-```{r}
-#test cell. Remove when done.
-obs$n_bee_species[obs$IsNative == TRUE][1]
-
-```
-
 
 
 ```{r}
 
+#running the A/B test and visualizing the results
 test <- clean_df %>%
   mutate(IsNative_shuffled = sample(IsNative)) %>%
   group_by(IsNative_shuffled) %>%
@@ -316,15 +420,32 @@ for (i in 1:n_sim) {
 
 hist(sim_stats,
      main = "Permutation test: distribution of (bee species visiting native - non-native)",
-     xlab = "Difference in number of bee species (Native - Non-native)")
+     xlab = "Relative difference in number of bee species (Native - Non-native)")
 abline(v = obs_stat, col = "red", lwd = 2)
-legend("topright", legend = paste("Observed =", obs_stat), col = "red")
+legend("topright", legend = paste("Observed =", round(obs_stat,2)), col = "red")
 ```
 
-#Note: 
-If this is the case, we'd reject the null. Let's standardize and see if we get something different.
+```{r}
+#calculating the p-value
+#obs_stat
+#sim_stats
+p_value <- mean(abs(sim_stats) >= abs(obs_stat))
+p_value
+```
 
+With this very high p-value, we fail to reject the null hypothesis that the number of species of native Oregon bees visiting native plants is the same as the number of species of native Oregon bees visiting nonnative plants.
 
+# [okay, cool. why?]
+[Let's try to understand these results.What are the bee species visiting both natives and non-natives? Only natives? Only non-natives? This will tell us a lot.]
+
+[Also, if we can make one of those amazing graphs like they have on the front page of the OBA website, we should. She showed us how to in one of the demos iirc.]
+
+```{r}
+#I'm now going to investigate which bees are visiting which plants.
+
+#bee species that were seen visiting natives 
+sort(unique(clean_df$bee_species[clean_df$IsNative == TRUE]))
+```
 
 
 
