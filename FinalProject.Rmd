@@ -26,7 +26,10 @@ library(viridisLite)
 library(readxl)
 library(writexl)
 library(stringr)
-library(waldo)
+library(bipartite)
+library(igraph)
+library(networkD3)
+
 ```
 
 
@@ -36,9 +39,9 @@ library(waldo)
 #2) The Oregon ecoregions data (polygon shape file)
 #Reading in the files:
 oba <- read.csv('../OBA_2018-2024.csv')
-ecoregions_shp <- st_read("../ecoregion_shp_data/ecoregion.shp") #Jennifer
+#ecoregions_shp <- st_read("../ecoregion_shp_data/ecoregion.shp") #Jennifer
 # Chu 
-#ecoregions_shp <- st_read("../ecoregion.shp")
+ecoregions_shp <- st_read("../ecoregion.shp")
 ```
 
 
@@ -428,9 +431,9 @@ for (i in 1:n_sim) {
                   stat_tbl$n_bee_species[stat_tbl$IsNative_shuffled == FALSE]
 }
 
-hist(sim_stats,
-     main = "Permutation test: distribution of (bee species visiting native - non-native)",
-     xlab = "Relative difference in number of bee species (Native - Non-native)")
+hist(sim_stats, col = "skyblue", 
+     main = "AB Test: Distribution of Bee Species Visiting Native vs Non-native Plants",
+     xlab = "Standardized difference in number of bee species (Native - Non-native)")
 abline(v = obs_stat, col = "red", lwd = 2)
 legend("topright", legend = paste("Observed =", round(obs_stat,2)), col = "red")
 ```
@@ -549,5 +552,66 @@ sankeyNetwork(Links = g_nonnat_beeplant_net3d$links,
             Value = "value",  NodeID = "name", 
             nodePadding = 0, height = 5000)
 ```
+
+```{r}
+# filter to the most important 15 plant species and remake networks to those most important plant species and bees on those plants.
+```
+
+
+```{r}
+clean_df
+bee_status <- clean_df %>%
+  group_by(bee_species) %>%
+  summarize(
+    visits_native = any(IsNative==TRUE),
+    visits_nonnative = any(IsNative==FALSE)
+  )
+
+bee_native_status <- bee_status %>%
+  mutate(
+    visit_category = case_when(
+      visits_native & visits_nonnative ~ "Both native & nonnative",
+      visits_native & !visits_nonnative ~ "Only native",
+      !visits_native & visits_nonnative ~ "Only nonnative",
+      TRUE ~ "No data"
+  ))
+
+plants_list <- bee_native_status %>%
+  group_by(visit_category)
+
+plants_list
+
+
+count_df <- bee_native_status %>% 
+  count(visit_category)
+
+ggplot(count_df, aes(x = reorder(visit_category, n), y = n)) +
+  geom_col() +
+  coord_flip() +
+  labs(
+    x = NULL,
+    y = "Number of bee species",
+    title = "Bee species by plant-visit category",
+    subtitle = "Only native / Only nonnative / Both")
+
+bees_both <- bee_native_status %>%
+  filter(visit_category == "Both native & nonnative") %>%
+  pull(bee_species)
+
+bees_only_native <- bee_native_status %>%
+  filter(visit_category == "Only native") %>%
+  pull(bee_species)
+
+bees_only_nonnative <- bee_native_status %>%
+  filter(visit_category == "Only nonnative") %>%
+  pull(bee_species)
+
+bees_both
+bees_only_native
+bees_only_nonnative
+
+count(unique)
+```
+
 
 
