@@ -554,7 +554,101 @@ sankeyNetwork(Links = g_nonnat_beeplant_net3d$links,
 ```
 
 ```{r}
-# filter to the most important 15 plant species and remake networks to those most important plant species and bees on those plants.
+# filter to the most important 10 plant species and remake networks to those most important plant species and bees on those plants.
+
+plant_bee_list <- native_df %>%
+  group_by(speciesPlant) %>%
+  summarise(
+    bee_species_list = paste(unique(bee_species), collapse = ", "),
+    num_bee_species = n_distinct(bee_species),
+    .groups = "drop"
+  )
+
+# Select top 10 native plants by number of bee species
+top10_native_plants <- plant_bee_list %>%
+  arrange(desc(num_bee_species)) %>%
+  slice(1:10)
+
+top10_native_plant_names <- top10_native_plants$speciesPlant
+
+# Filter native_df to only include these top 10 plants
+filtered_native_df <- native_df %>%
+  filter(speciesPlant %in% top10_native_plant_names)
+
+```
+
+```{r}
+native_adj <- table(filtered_native_df)
+native_adj <- unclass(native_adj) #the adjacency matrix
+
+# convert the adj matrix to an igraph bipartite adjacency matrix (need igraph package)
+g_native_plant <- graph_from_biadjacency_matrix(native_adj,
+                                           weighted =TRUE)
+
+# put in in a from we can give to sankeyNetwork
+### find modules
+mod_native <- cluster_walktrap(g_native_plant)
+### assign vertices to modules
+groups <- membership(mod_native)
+
+### convert to a network 3d object
+g_native_net3d <- igraph_to_networkD3(g_native_plant, group=groups, 
+                                       what = "both")
+
+sankeyNetwork(Links = g_native_net3d$links,
+             Nodes = g_native_net3d$nodes,
+            Source = "source", Target = "target",
+            Value = "value",  NodeID = "name", 
+            nodePadding = 0, height = 1000)
+
+```
+
+
+
+```{r}
+plant_bee_list_nonnative <- nonnative_df %>%
+  group_by(speciesPlant) %>%
+  summarise(
+    bee_species_list = paste(unique(bee_species), collapse = ", "),
+    num_bee_species_nonnative = n_distinct(bee_species),
+    .groups = "drop"
+  )
+
+# Select top 10 nonnative plants by number of bee species
+top10_nonnative_plants <- plant_bee_list_nonnative %>%
+  arrange(desc(num_bee_species_nonnative)) %>%
+  slice(1:10)
+
+top10_nonnative_plant_names <- top10_nonnative_plants$speciesPlant
+
+# Filter nonnative_df to only include these top 10 plants
+filtered_nonnative_df <- nonnative_df %>%
+  filter(speciesPlant %in% top10_nonnative_plant_names)
+```
+
+```{r}
+nonnative_adj <- table(filtered_nonnative_df)
+nonnative_adj <- unclass(nonnative_adj) #the adjacency matrix
+
+# convert the adj matrix to an igraph bipartite adjacency matrix (need igraph package)
+g_nonnative_plant <- graph_from_biadjacency_matrix(nonnative_adj,
+                                           weighted =TRUE)
+
+#put in in a from we can give to sankeyNetwork
+### find modules
+mod_nonnative <- cluster_walktrap(g_nonnative_plant)
+### assign vertices to modules
+groups <- membership(mod_nonnative)
+
+### convert to a network 3d object
+g_nonnative_net3d <- igraph_to_networkD3(g_nonnative_plant, group=groups, 
+                                       what = "both")
+
+sankeyNetwork(Links = g_nonnative_net3d$links,
+             Nodes = g_nonnative_net3d$nodes,
+            Source = "source", Target = "target",
+            Value = "value",  NodeID = "name", 
+            nodePadding = 0, height = 1000)
 ```
 
 
