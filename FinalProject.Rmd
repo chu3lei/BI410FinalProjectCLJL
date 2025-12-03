@@ -709,10 +709,6 @@ bees_only_native
 bees_only_nonnative
 test <- as.list(bees_only_nonnative)
 
-#of the bee species that were only seen visiting nonnative plants, how many 
-#observations were there?
-another_test <- bee_native_status[bee_native_status$visits_native == FALSE & bee_native_status$visits_nonnative == TRUE,]
-another_test$bee_species
 ```
 
 ```{r}
