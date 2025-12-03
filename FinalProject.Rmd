@@ -735,4 +735,30 @@ sum(clean_df$bee_species == "Sphecodes arvensiformis")
 ```
 
 
+```{r}
+#I got curious if the native plant/bee interactions had similar
+#observation counts:
+bees_only_native
 
+sum(clean_df$bee_species == "Agapostemon virescens")
+sum(clean_df$bee_species == "Andrena prunorum")
+sum(clean_df$bee_species == "Andrena vicina")
+sum(clean_df$bee_species == "Dianthidium")
+sum(clean_df$bee_species == "Hoplitis") 
+sum(clean_df$bee_species == "Lasioglossum buccale")
+sum(clean_df$bee_species == "Lasioglossum cordleyi")
+sum(clean_df$bee_species == "Lasioglossum cressonii")
+sum(clean_df$bee_species == "Lasioglossum nigrum")
+sum(clean_df$bee_species == "Lasioglossum occulturn")
+sum(clean_df$bee_species == "Lasioglossum ruidosense")
+sum(clean_df$bee_species == "Megachile gentilis")
+sum(clean_df$bee_species == "Megachile melanophaea")
+sum(clean_df$bee_species == "Melissodes metenuus")
+sum(clean_df$bee_species == "Melissodes microstictus")
+sum(clean_df$bee_species == "Melissodes rivalis")
+sum(clean_df$bee_species == "Sphecodes kincaidii")
+sum(clean_df$bee_species == "Sphecodes Triepeolus")
+
+#This is interesting. Again, most have only one or two obs., but one has 9 and 
+#one has 15.
+```
