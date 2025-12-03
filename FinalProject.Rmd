@@ -679,7 +679,7 @@ plants_list
 count_df <- bee_native_status %>% 
   count(visit_category)
 
-ggplot(count_df, aes(x = reorder(visit_category, n), y = n)) +
+ggplot(count_df, aes(x = reorder(visit_category, n), y = n, fill = visit_category)) +
   geom_col() +
   coord_flip() +
   labs(
@@ -687,6 +687,7 @@ ggplot(count_df, aes(x = reorder(visit_category, n), y = n)) +
     y = "Number of bee species",
     title = "Bee species by plant-visit category",
     subtitle = "Only native / Only nonnative / Both")
+
 
 bees_both <- bee_native_status %>%
   filter(visit_category == "Both native & nonnative") %>%
@@ -699,12 +700,14 @@ bees_only_native <- bee_native_status %>%
 bees_only_nonnative <- bee_native_status %>%
   filter(visit_category == "Only nonnative") %>%
   pull(bee_species)
+```
 
+
+```{r}
 bees_both
 bees_only_native
 bees_only_nonnative
-
-count(unique)
+gi
 ```
 
 
