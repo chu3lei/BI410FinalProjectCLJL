@@ -39,9 +39,9 @@ library(networkD3)
 #2) The Oregon ecoregions data (polygon shape file)
 #Reading in the files:
 oba <- read.csv('../OBA_2018-2024.csv')
-#ecoregions_shp <- st_read("../ecoregion_shp_data/ecoregion.shp") #Jennifer
+ecoregions_shp <- st_read("../ecoregion_shp_data/ecoregion.shp") #Jennifer
 # Chu 
-ecoregions_shp <- st_read("../ecoregion.shp")
+#ecoregions_shp <- st_read("../ecoregion.shp")
 ```
 
 
@@ -707,7 +707,35 @@ bees_only_nonnative <- bee_native_status %>%
 bees_both
 bees_only_native
 bees_only_nonnative
-gi
+test <- as.list(bees_only_nonnative)
+
+#of the bee species that were only seen visiting nonnative plants, how many 
+#observations were there?
+another_test <- bee_native_status[bee_native_status$visits_native == FALSE & bee_native_status$visits_nonnative == TRUE,]
+another_test$bee_species
+```
+
+```{r}
+
+#These are the counts of the bees that were listed as visiting only non-native.
+#They are overwhelmingly bees with only one-three observations
+sum(clean_df$bee_species == "Andrena angustitarsata")
+sum(clean_df$bee_species == "Andrena hippotes")
+sum(clean_df$bee_species == "Andrena perplexa")
+sum(clean_df$bee_species == "Andrena salicifloris")
+sum(clean_df$bee_species == "Anthidium manicatum") #Not a native bee!
+sum(clean_df$bee_species == "Anthophora pacifica")
+sum(clean_df$bee_species == "Bombus impatiens")
+sum(clean_df$bee_species == "Eucera frater")
+sum(clean_df$bee_species == "Halictus  ligatus")
+sum(clean_df$bee_species == "Halictus virgatellus")
+sum(clean_df$bee_species == "Lasioglossum boreale")
+sum(clean_df$bee_species == "Lasioglossum egregium")
+sum(clean_df$bee_species == "Lasioglossum kincaidii")
+sum(clean_df$bee_species == "Lasioglossum quebecense")
+sum(clean_df$bee_species == "Megachile brevis")
+sum(clean_df$bee_species == "Osmia nemoris")
+sum(clean_df$bee_species == "Sphecodes arvensiformis")
 ```
 
 
