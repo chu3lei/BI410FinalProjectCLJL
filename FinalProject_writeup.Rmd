@@ -1,0 +1,764 @@
+---
+title: "BI410 Final Project"
+author: "Chu Lei & Jennifer Linnaea"
+date: "2025-19-11"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r load-libraries-lab, echo=FALSE, results="hide", message=FALSE, warning=FALSE}
+#Loading the libraries needed for the project.
+
+library(tidyr)
+library(terra)
+library(ggplot2)
+library(dplyr)
+library(sf)
+library(ggspatial)
+library(RColorBrewer)
+library(viridisLite)
+library(readxl)
+library(writexl)
+library(stringr)
+library(bipartite)
+library(igraph)
+library(networkD3)
+
+```
+
+
+```{r}
+#We need two files for this project: 
+#1) The OBA data (csv file) #Note: identical dim() to the oba .xlsx file
+#2) The Oregon ecoregions data (polygon shape file)
+#Reading in the files:
+oba <- read.csv('../OBA_2018-2024.csv')
+ecoregions_shp <- st_read("../ecoregion_shp_data/ecoregion.shp") #Jennifer
+# Chu 
+#ecoregions_shp <- st_read("../ecoregion.shp")
+```
+
+
+```{r}
+#Visualizing the bee data. Use decimalLatitude and decimalLongitude as key
+head(oba)
+```
+
+
+```{r}
+#visualizing the ecoregions data
+str(ecoregions_shp)
+names(ecoregions_shp)
+
+```
+
+```{r}
+#Visualizing the ecoregions data part 2: A map of Oregon ecoregions
+eco_vect <- vect(ecoregions_shp)
+r <- rast(ext(eco_vect), resolution =  1000) 
+raster_output <- rasterize(ecoregions_shp, r, field = "ECO")
+
+plot(raster_output)
+```
+
+
+For this project, we will be using only bee-plant interactions that occurred in coastal regions of Oregon, specifically region 1.a. Coastal Lowlands and 1.b. Coastal Uplands. However, the oba data does not have a column representing ecoregion that would allow us to subset the data. So we will join the oba data with the ecoregions data. To do this, it will be helpful to know the coordinate reference system used for the location data in the oba dataset. According to Dr. Ponisio, it is: DATUM: WGS84, unprojected lat long. EPSG code: 4326. 
+
+
+```{r}
+#The first step in joining the two datasets is to convert the oba data into a spatial object. We'll do so using st_as_sf()
+#Note: 'sf' stands for 'simple features'
+
+#However, the function will not accept data that has missing coordinate values, and ours does. So we will need remove any rows in the dataframe that don't have latitude and longitude values. 
+
+sum(is.na(oba$decimalLongitude)) #there are 36
+sum(is.na(oba$decimalLatitude)) #there are 36
+
+oba_sf <- oba %>% drop_na(c(decimalLongitude, decimalLatitude))
+
+oba_sf <- st_as_sf(oba_sf, coords = c("decimalLongitude", "decimalLatitude"), crs = 4326)
+
+```
+
+
+```{r}
+#Next, we need to check if ecoregions_shp is in WGS84 (EPSG:4326) and if not, reproject it
+st_crs(ecoregions_shp) == st_crs(oba_sf) #FALSE before the reprojection
+oba_sf <- st_transform(oba_sf, st_crs(ecoregions_shp))
+st_crs(ecoregions_shp) == st_crs(oba_sf) #TRUE after the reprojection
+```
+
+
+```{r}
+#Now that the two sf objects have the same projection, we can join them.
+#Note: The argument 'join=st_intersects' says that each point in the oba
+#dataset will be assigned to the polygon(ecoregion) it lies within
+oba_with_ecoregions_sf <- st_join(oba_sf, ecoregions_shp, join = st_intersects)
+head(oba_with_ecoregions_sf)
+```
+
+
+
+```{r}
+#Now there is an ecoregion assigned to each observation.
+#However,for now, a regular dataframe will be easier to work with.
+#Converting oba data back to a dataframe:
+oba_with_ecoregions <- oba_with_ecoregions_sf |> st_drop_geometry()
+head(oba_with_ecoregions)
+```
+
+```{r}
+#test cell. 
+#observing the ecoregion column
+head(oba_with_ecoregions$ECO)
+#Chu it worked it worked!
+```
+
+Now that we have successfully joined the data, we can subset it to only the coastal regions 1a and 1b.
+
+```{r}
+#subsetting to coastal data only (ecoregions 1a (coastal lowlands) and 1b (coastal uplands))
+
+coastal_oba <- subset(oba_with_ecoregions, ECO == '1a' | ECO == '1b')
+head(coastal_oba)
+```
+
+
+
+
+Next, we need to add a column that's TRUE if the plant species is native 
+to Oregon, and FALSE if not. I'm going to populate this by hand with data from 
+oregonflora.org.
+
+```{r}
+#First, what are the unique plant species in our data?
+plant_sp_list <- sort(unique(coastal_oba$speciesPlant))
+#length(plant_sp_list) #there are 204
+plant_sp_list
+```
+
+
+```{r}
+#cell for cleaning and mutating plant names
+
+#The 'x' designation for hypbrids came through in this dataset as 'Ã—'. I'm going to change it to 'x'.
+coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Arctostaphylos Ã— media'] <- 'Arctostaphylos x media'
+coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Erica Ã— darleyensis'] <- 'Erica x darleyensis'
+coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Erysimum Ã— cheiri'] <- 'Erysimum x cheiri'
+coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Leucanthemum Ã— superbum'] <- 'Leucanthemum x superbum'
+coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Spiraea Ã— vanhouttei'] <- 'Spiraea x vanhouttei'
+
+
+#Note: Brassica campestris and Brassica rapa are synonyms. 
+#Mutating all instances of Brassica campestris to Brassica rapa
+coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Brassica campestris'] <- 'Brassica rapa'
+
+#I'm mutating Cuscata pacifica var. pacifica to simply Cuscata pacifica, since there are 
+#no other Cuscata pacifica varieties in the data 
+coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Cuscuta pacifica pacifica'] <- 'Cuscuta pacifica'
+
+#I'm also mutating Cuscuta salina to Cuscuta pacifica. Oregon flora redirects the former to the latter.
+coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Cuscuta salina'] <- 'Cuscuta pacifica'
+
+#Altering the data to include the subspecies Epilobium ciliatum ciliatum in Epilobium ciliatum.
+coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Epilobium ciliatum ciliatum'] <- 'Epilobium ciliatum'
+
+#Altering the data to include the subspecies Grindelia stricta stricta in Grindelia stricta.
+coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Grindelia stricta stricta'] <- 'Grindelia stricta'
+
+#Altering the data to include the subspecies Lotus pedunculatus pedunculatus in Lotus pedunculatus.
+coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Lotus pedunculatus pedunculatus'] <- 'Lotus pedunculatus'
+
+#Note: Rubus bifrons and Rubus armeniacus are synonyms. 
+#Mutating all instances of Rubus bifrons to Rubus armeniacus
+coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Rubus bifrons'] <- 'Rubus armeniacus'
+
+#Note: Solidago canadensis and Solidago elongata are synonyms. 
+#Mutating all instances of Solidago canadensis to Solidago elongata
+coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Solidago canadensis'] <- 'Solidago elongata'
+
+#Altering the data to include the subspecies Solidago spathulata spathulata in Solidago spathulata.
+coastal_oba$speciesPlant[coastal_oba$speciesPlant == 'Solidago spathulata spathulata'] <- 'Solidago spathulata'
+
+
+plant_sp_list <- sort(unique(coastal_oba$speciesPlant))
+plant_sp_list
+```
+
+
+```{r}
+#We used the plant_list to create an excel file, and hand-populated an IsNative 
+#column with Boolean values. Native = TRUE, Non-native = FALSE
+
+#reading in the excel table of native/non-native plant species information
+isnative_table <- read_excel("../BI410FinalProjectCLJL/plant_species_list.xlsx", sheet = "Sheet1") 
+
+#What is the length of the plant_sp_list (which still includes NA data as "")?
+length(plant_sp_list) #195
+#What is the length of the isnative_table? (which also includes an NA row)
+length(isnative_table$Species) #195
+
+#Since the two are now the same length, each plant species represented in the 
+#coastal_oba data is now also represented in the isnative_table.
+#Therefore we can do a left join with confidence
+#(Note that we still haven't dealth with NA values)
+
+```
+
+
+
+```{r}
+#names(isnative_table) #Species, IsNative, Common Name
+#names(coastal_oba) #Plant species column is called "speciesPlant"
+
+#Since the columns we want to merge these files on have different names,
+#we'll change the name of isnative_table to match our OBA plant sp. column name:
+names(isnative_table)[names(isnative_table) == "Species"] <- "speciesPlant"
+
+#Note: was formerly called merged_df. Changing to add the column to coasal_oba
+#Now we can do the merge
+coastal_oba <- coastal_oba %>%
+  left_join(isnative_table, by = "speciesPlant") 
+
+head(coastal_oba)
+```
+
+```{r}
+#Looking at the column names of the coastal_oba DataFrame. The new columns are there.
+names(coastal_oba)
+
+```
+
+Now we have all the information we need to run our analysis in one DataFrame.
+For the A/B test, we'll cut the columns we don't need. 
+
+```{r}
+#Creating a DataFrame for the A/B test containing only the columns we need
+#and keeping only bee genus and species, plant genus and species, and IsNative
+clean_df <- coastal_oba %>%
+  select(speciesPlant, IsNative, genus, specificEpithet)
+
+summary(clean_df)
+#We have 937 NA's in the IsNative column.
+#These should be present in any row where speciesPlant has a value of "".
+#Will check this:
+sum(clean_df$speciesPlant == "") #937
+#As expected, there are 937 rows without a species name. 
+#Note: that's almost 28 percent of observations! 
+
+#To do the A/B analysis, we will have to drop the rows without species names.
+#However, this may introduce bias into our analysis if these rows are not 
+#random but are a certain subset of the collections.
+#The clean_df is 3398 rows long with NAs. Once removed, it should be 2461 rows
+
+clean_df <- clean_df[clean_df$speciesPlant != "",]
+dim(clean_df) #2461 x 4
+head(clean_df)
+```
+
+
+```{r}
+#Combining bee genus and bee species into one column and dropping old cols:
+clean_df$bee_species <- paste(clean_df$genus, clean_df$specificEpithet)
+clean_df <- clean_df %>%
+  select(speciesPlant, IsNative, bee_species)
+head(clean_df)
+```
+
+Now that we've combined the bee genus/species into a single column, we can easily remove nonnative bee species, the presence of which will bias our results (since our hypothesis only applies to native bee species). In addition, since our statistic is a difference in number of bee species, we need to remove rows with absent bee species or with only genus information. 
+
+However, removing genus-only values must be done carefully. See discussion in the code comments below.
+
+```{r}
+#remove Apis mellifera, the European honey bee
+sum(clean_df$bee_species == "Apis mellifera") #There are only 24 observations of this bee
+clean_df <- clean_df[clean_df$bee_species != "Apis mellifera",]
+#dim(clean_df) #2437 rows remaining
+
+#To ease the data cleaning, I'm going to strip leading and trailing whitespace
+#from the bee_species column
+clean_df$bee_species <- trimws(clean_df$bee_species)
+sort(unique(clean_df$bee_species[clean_df$IsNative == TRUE]))
+sort(unique(clean_df$bee_species[clean_df$IsNative == FALSE]))
+```
+
+```{r}
+#Note: Because we care about the number of bee species visiting native vs. non-native bees, I will remove the genus-only values as follows: 
+
+#First I will get lists of unique bee_species values for both IsNative == TRUE and IsNative == FALSE. Second, for each of these lists _separately_:
+
+#If a genus-only name is the _only_ observation of any species in that genus, I will count it as one species. But if a genus-only name is in addition to specific genus names, I will remove the genus-only name from the data set. The assumption here, which may not be correct, is that genus-only observations are of species there are already observations for, and not an additional unidentified species of that genus. The reason I am splitting the bee_species values into native/nonnative plant lists is because if a unique species is shown in one list but only a genus name is shown in the other, I want to count both of those as one species visiting one plant, because in the latter case it is known that some individual from that genus visited - that their species was unknown is no reason to say that _no_ species visited the plant.
+
+# By examining these lists, I see that I need to remove these genus-only values:
+#""
+#sum(clean_df$bee_species == "") #398 of these!
+clean_df <- clean_df[clean_df$bee_species != "",]
+
+#Andrena
+#sum(clean_df$bee_species == "Andrena") #71 of these
+clean_df <- clean_df[clean_df$bee_species != "Andrena",]
+
+#Anthidium
+#sum(clean_df$bee_species == "Anthidium") #35 of these
+clean_df <- clean_df[clean_df$bee_species != "Anthidium",]
+
+#"Anthophora"
+#sum(clean_df$bee_species == "Anthophora") #2 of these
+clean_df <- clean_df[clean_df$bee_species != "Anthophora",]
+
+#Ceratina
+#sum(clean_df$bee_species == "Ceratina") #5 of these
+clean_df <- clean_df[clean_df$bee_species != "Ceratina",]
+
+#Coelioxys
+#sum(clean_df$bee_species == "Coelioxys") #8 of these
+clean_df <- clean_df[clean_df$bee_species != "Coelioxys",]
+
+#Colletes
+#sum(clean_df$bee_species == "Colletes") #37 of these
+clean_df <- clean_df[clean_df$bee_species != "Colletes",]
+
+#Habropoda
+#sum(clean_df$bee_species == "Habropoda") #48 of these
+clean_df <- clean_df[clean_df$bee_species != "Habropoda",]
+
+#Halictus
+#sum(clean_df$bee_species == "Halictus") #16 of these
+clean_df <- clean_df[clean_df$bee_species != "Halictus",]
+
+#Lasioglossum
+#sum(clean_df$bee_species == "Lasioglossum") #291 of these. That's a lot.
+clean_df <- clean_df[clean_df$bee_species != "Lasioglossum",]
+
+#Megachile
+#sum(clean_df$bee_species == "Megachile") #61 of these
+clean_df <- clean_df[clean_df$bee_species != "Megachile",]
+
+#Melissodes
+#sum(clean_df$bee_species == "Melissodes") #35 of these
+clean_df <- clean_df[clean_df$bee_species != "Melissodes",]
+
+#Osmia
+#Since Osmia should be kept in the native=True list and removed in the native=false list,
+#I'll deal with it separately when calculating the statistic.
+#Note: Doing this doesn't change whether we reject the null.
+
+#Sphecodes
+#sum(clean_df$bee_species == "Sphecodes") #18 of these
+clean_df <- clean_df[clean_df$bee_species != "Sphecodes",]
+#dim(clean_df) #1414 rows remaining
+```
+
+
+The last thing we need to do before running the A/B test is to account for the fact that the number of observations of bees on native flowers and the number of observations on nonnative flowers might be substantially different. If so, we'll need to standardize the data.
+
+
+```{r}
+#Checking how many be observations are on native vs. non-native flowers
+native_obs_count <- sum(clean_df$IsNative == TRUE)
+nonnative_obs_count <- sum(clean_df$IsNative == FALSE)
+clean_df_row_number <- length(clean_df$IsNative)
+native_percent <- round(native_obs_count/clean_df_row_number,2) * 100
+nonnative_percent <- round(nonnative_obs_count/clean_df_row_number,2) * 100
+print(paste("Percent of bee observations on native flowers:", native_percent))
+print(paste("Percent of bee observations on native flowers:", nonnative_percent))
+
+#need to also do this without multiplying by 100 for the step below
+relative_native <- round(native_obs_count/clean_df_row_number,2)
+relative_nonnative <- round(nonnative_obs_count/clean_df_row_number,2)
+```
+
+So we see that the number of observations is relatively equal. Nevertheless, it won't hurt to standardize the statistic. 
+
+Statistic used: (number of bee spp. on native plants * proportion of observations involving native plants) - (number of bee spp. on nonnative plants * proportion of observations involving nonnative plants)
+
+```{r}
+#Calculating the statistic:
+#To Chu. 11/28/25: Our statistic may be flawed because we didn't account for the number
+#of _observations_ on native vs. nonnative flowers? As Dr. Ponisio said, we may need to standardize. But for now I'll leave it
+#To Chu 11/30/25. I'm going to standardize the statistic to see if it changes our results any. I'll do this my multiplying the number of bee species on native plants by the proportion of observations on native plants, and doing the same thing for bee spp. on nonnatives. I'll leave your code unchanged and comment it out, so that we can revert easily.
+
+
+obs <- clean_df %>%
+  group_by(IsNative) %>%
+  summarise(n_bee_species = n_distinct(bee_species))
+
+print(obs) 
+
+#obs_stat <- obs$n_bee_species[obs$IsNative == TRUE][1] -
+ #           obs$n_bee_species[obs$IsNative == FALSE][1]
+
+obs_stat <- (obs$n_bee_species[obs$IsNative == TRUE][1] * relative_native) -
+  ((obs$n_bee_species[obs$IsNative == FALSE][1] - 1) * relative_nonnative - 1)#this minus
+#one is because the Osmia genus-only value should be kept in TRUE (it's the only
+#Osmia) and removed in False (there's an individual species in addition to genus-only)
+
+obs_stat 
+```
+
+
+```{r}
+
+#running the A/B test and visualizing the results
+test <- clean_df %>%
+  mutate(IsNative_shuffled = sample(IsNative)) %>%
+  group_by(IsNative_shuffled) %>%
+  summarise(n_bee_species = n_distinct(bee_species))
+
+
+
+set.seed(1)
+
+n_sim <- 1000
+sim_stats <- numeric(n_sim)
+
+for (i in 1:n_sim) {
+
+  shuffled <- clean_df %>% 
+    mutate(IsNative_shuffled = sample(IsNative))
+
+  stat_tbl <- shuffled %>%
+    group_by(IsNative_shuffled) %>%
+    summarise(n_bee_species = n_distinct(bee_species))
+
+  sim_stats[i] <- stat_tbl$n_bee_species[stat_tbl$IsNative_shuffled == TRUE] -
+                  stat_tbl$n_bee_species[stat_tbl$IsNative_shuffled == FALSE]
+}
+
+hist(sim_stats, col = "skyblue", 
+     main = "AB Test: Distribution of Bee Species Visiting Native vs Non-native Plants",
+     xlab = "Standardized difference in number of bee species (Native - Non-native)")
+abline(v = obs_stat, col = "red", lwd = 2)
+legend("topright", legend = paste("Observed =", round(obs_stat,2)), col = "red")
+```
+
+```{r}
+#calculating the p-value
+#obs_stat
+#sim_stats
+p_value <- mean(abs(sim_stats) >= abs(obs_stat))
+p_value
+```
+
+With this very high p-value, we fail to reject the null hypothesis that the number of species of native Oregon bees visiting native plants is the same as the number of species of native Oregon bees visiting nonnative plants.
+
+# [okay, cool. why?]
+[Let's try to understand these results.What are the bee species visiting both natives and non-natives? Only natives? Only non-natives? This will tell us a lot.]
+
+[Also, if we can make one of those amazing graphs like they have on the front page of the OBA website, we should. She showed us how to in one of the demos iirc.]
+
+```{r}
+#I'm now going to investigate which bees are visiting which plants.
+
+#bee species that were seen visiting natives 
+bees_on_natives <- sort(unique(clean_df$bee_species[clean_df$IsNative == TRUE]))
+bees_on_nonnatives <- sort(unique(clean_df$bee_species[clean_df$IsNative == FALSE]))
+#waldo::compare(bees_on_natives, bees_on_nonnatives) #whew I don't understand this xD
+bees_on_natives
+bees_on_nonnatives
+#all_bees <- sort(unique(clean_df$bee_species))
+```
+
+[Chu - let's take a look at these two lists and go from there.]
+
+```{r}
+#Idea: make an excel file
+#write_xlsx(all_bees, "./bee_species.xlsx") #doesn't yet work. need to get in correct format
+```
+
+```{r}
+# have another idea. I want to visualize the relationships of bees to native and non-native plants. It would be fantastic to have a graph like the one on the oba website. Can we do this? Yes! (I did it)
+#First, we would need to splint the data into two separate data frames.
+#moving the bee_sp to the first column:
+clean_df <- clean_df %>% select(bee_species, everything())
+#create two dataframes and then drop the IsNative column
+native_df <- clean_df[clean_df$IsNative == TRUE,]
+nonnative_df <- clean_df[clean_df$IsNative == FALSE,]
+
+native_df <- native_df %>% select(c(bee_species,speciesPlant))
+nonnative_df <- nonnative_df %>% select(c(bee_species,speciesPlant))
+head(nonnative_df)
+```
+
+```{r}
+#Second, following the example of demo 6-3vis, we should create an adjacency matrix for each data frame
+#First I'll do the bee/native plant relationship
+nat_beeplant_adj <- table(native_df)
+nat_beeplant_adj <- unclass(nat_beeplant_adj) #the adjacency matrix
+
+#Third, convert the adj matrix to an igraph bipartite adjacency matrix (need igraph package)
+g_nat_beeplant <- graph_from_biadjacency_matrix(nat_beeplant_adj,
+                                           weighted =TRUE)
+
+#4th, put in in a from we can give to sankeyNetwork
+### find modules
+mod_nat_gplant <- cluster_walktrap(g_nat_beeplant)
+### assign vertices to modules
+groups <- membership(mod_nat_gplant)
+
+### convert to a network 3d object
+g_nat_beeplant_net3d <- igraph_to_networkD3(g_nat_beeplant, group=groups, 
+                                       what = "both")
+
+
+```
+
+```{r}
+#Graph of bee sp./native plant network
+sankeyNetwork(Links = g_nat_beeplant_net3d$links,
+             Nodes = g_nat_beeplant_net3d$nodes,
+            Source = "source", Target = "target",
+            Value = "value",  NodeID = "name", 
+            nodePadding = 0, height = 5000)
+```
+
+
+
+```{r}
+#
+#Next I'll do the bee/non-native plant relationship
+nonnat_beeplant_adj <- table(nonnative_df)
+nonnat_beeplant_adj <- unclass(nonnat_beeplant_adj) #the adjacency matrix
+
+#Third, convert the adj matrix to an igraph bipartite adjacency matrix (need igraph package)
+g_nonnat_beeplant <- graph_from_biadjacency_matrix(nonnat_beeplant_adj,
+                                           weighted =TRUE)
+
+#4th, put in in a from we can give to sankeyNetwork
+### find modules
+mod_nonnat_gplant <- cluster_walktrap(g_nonnat_beeplant)
+### assign vertices to modules
+groups2 <- membership(mod_nonnat_gplant)
+
+### convert to a network 3d object
+g_nonnat_beeplant_net3d <- igraph_to_networkD3(g_nonnat_beeplant, group=groups2, 
+                                       what = "both")
+
+
+```
+
+
+```{r}
+#Graph of bee sp./non-native plant network
+sankeyNetwork(Links = g_nonnat_beeplant_net3d$links,
+             Nodes = g_nonnat_beeplant_net3d$nodes,
+            Source = "source", Target = "target",
+            Value = "value",  NodeID = "name", 
+            nodePadding = 0, height = 5000)
+```
+
+```{r}
+# filter to the most important 10 plant species and remake networks to those most important plant species and bees on those plants.
+
+plant_bee_list <- native_df %>%
+  group_by(speciesPlant) %>%
+  summarise(
+    bee_species_list = paste(unique(bee_species), collapse = ", "),
+    num_bee_species = n_distinct(bee_species),
+    .groups = "drop"
+  )
+
+# Select top 10 native plants by number of bee species
+top10_native_plants <- plant_bee_list %>%
+  arrange(desc(num_bee_species)) %>%
+  slice(1:10)
+
+top10_native_plant_names <- top10_native_plants$speciesPlant
+
+# Filter native_df to only include these top 10 plants
+filtered_native_df <- native_df %>%
+  filter(speciesPlant %in% top10_native_plant_names)
+
+```
+
+```{r}
+native_adj <- table(filtered_native_df)
+native_adj <- unclass(native_adj) #the adjacency matrix
+
+# convert the adj matrix to an igraph bipartite adjacency matrix (need igraph package)
+g_native_plant <- graph_from_biadjacency_matrix(native_adj,
+                                           weighted =TRUE)
+
+# put in in a from we can give to sankeyNetwork
+### find modules
+mod_native <- cluster_walktrap(g_native_plant)
+### assign vertices to modules
+groups <- membership(mod_native)
+
+### convert to a network 3d object
+g_native_net3d <- igraph_to_networkD3(g_native_plant, group=groups, 
+                                       what = "both")
+
+sankeyNetwork(Links = g_native_net3d$links,
+             Nodes = g_native_net3d$nodes,
+            Source = "source", Target = "target",
+            Value = "value",  NodeID = "name", 
+            nodePadding = 0, height = 1000)
+
+```
+
+
+
+```{r}
+plant_bee_list_nonnative <- nonnative_df %>%
+  group_by(speciesPlant) %>%
+  summarise(
+    bee_species_list = paste(unique(bee_species), collapse = ", "),
+    num_bee_species_nonnative = n_distinct(bee_species),
+    .groups = "drop"
+  )
+
+# Select top 10 nonnative plants by number of bee species
+top10_nonnative_plants <- plant_bee_list_nonnative %>%
+  arrange(desc(num_bee_species_nonnative)) %>%
+  slice(1:10)
+
+top10_nonnative_plant_names <- top10_nonnative_plants$speciesPlant
+
+# Filter nonnative_df to only include these top 10 plants
+filtered_nonnative_df <- nonnative_df %>%
+  filter(speciesPlant %in% top10_nonnative_plant_names)
+```
+
+```{r}
+nonnative_adj <- table(filtered_nonnative_df)
+nonnative_adj <- unclass(nonnative_adj) #the adjacency matrix
+
+# convert the adj matrix to an igraph bipartite adjacency matrix (need igraph package)
+g_nonnative_plant <- graph_from_biadjacency_matrix(nonnative_adj,
+                                           weighted =TRUE)
+
+#put in in a from we can give to sankeyNetwork
+### find modules
+mod_nonnative <- cluster_walktrap(g_nonnative_plant)
+### assign vertices to modules
+groups <- membership(mod_nonnative)
+
+### convert to a network 3d object
+g_nonnative_net3d <- igraph_to_networkD3(g_nonnative_plant, group=groups, 
+                                       what = "both")
+
+sankeyNetwork(Links = g_nonnative_net3d$links,
+             Nodes = g_nonnative_net3d$nodes,
+            Source = "source", Target = "target",
+            Value = "value",  NodeID = "name", 
+            nodePadding = 0, height = 1000)
+```
+
+
+```{r}
+clean_df
+bee_status <- clean_df %>%
+  group_by(bee_species) %>%
+  summarize(
+    visits_native = any(IsNative==TRUE),
+    visits_nonnative = any(IsNative==FALSE)
+  )
+
+bee_native_status <- bee_status %>%
+  mutate(
+    visit_category = case_when(
+      visits_native & visits_nonnative ~ "Both native & nonnative",
+      visits_native & !visits_nonnative ~ "Only native",
+      !visits_native & visits_nonnative ~ "Only nonnative",
+      TRUE ~ "No data"
+  ))
+
+plants_list <- bee_native_status %>%
+  group_by(visit_category)
+
+plants_list
+
+
+count_df <- bee_native_status %>% 
+  count(visit_category)
+
+ggplot(count_df, aes(x = reorder(visit_category, n), y = n, fill = visit_category)) +
+  geom_col() +
+  coord_flip() +
+  labs(
+    x = NULL,
+    y = "Number of bee species",
+    title = "Bee species by plant-visit category",
+    subtitle = "Only native / Only nonnative / Both")
+
+
+bees_both <- bee_native_status %>%
+  filter(visit_category == "Both native & nonnative") %>%
+  pull(bee_species)
+
+bees_only_native <- bee_native_status %>%
+  filter(visit_category == "Only native") %>%
+  pull(bee_species)
+
+bees_only_nonnative <- bee_native_status %>%
+  filter(visit_category == "Only nonnative") %>%
+  pull(bee_species)
+```
+
+
+```{r}
+bees_both
+bees_only_native
+bees_only_nonnative
+test <- as.list(bees_only_nonnative)
+
+```
+
+```{r}
+
+#These are the counts of the bees that were listed as visiting only non-native.
+#They are overwhelmingly bees with only one-three observations
+sum(clean_df$bee_species == "Andrena angustitarsata")
+sum(clean_df$bee_species == "Andrena hippotes")
+sum(clean_df$bee_species == "Andrena perplexa")
+sum(clean_df$bee_species == "Andrena salicifloris")
+sum(clean_df$bee_species == "Anthidium manicatum") #Not a native bee!
+sum(clean_df$bee_species == "Anthophora pacifica")
+sum(clean_df$bee_species == "Bombus impatiens")
+sum(clean_df$bee_species == "Eucera frater")
+sum(clean_df$bee_species == "Halictus  ligatus")
+sum(clean_df$bee_species == "Halictus virgatellus")
+sum(clean_df$bee_species == "Lasioglossum boreale")
+sum(clean_df$bee_species == "Lasioglossum egregium")
+sum(clean_df$bee_species == "Lasioglossum kincaidii")
+sum(clean_df$bee_species == "Lasioglossum quebecense")
+sum(clean_df$bee_species == "Megachile brevis")
+sum(clean_df$bee_species == "Osmia nemoris")
+sum(clean_df$bee_species == "Sphecodes arvensiformis")
+```
+
+
+```{r}
+#I got curious if the native plant/bee interactions had similar
+#observation counts:
+bees_only_native
+
+sum(clean_df$bee_species == "Agapostemon virescens")
+sum(clean_df$bee_species == "Andrena prunorum")
+sum(clean_df$bee_species == "Andrena vicina")
+sum(clean_df$bee_species == "Dianthidium")
+sum(clean_df$bee_species == "Hoplitis") 
+sum(clean_df$bee_species == "Lasioglossum buccale")
+sum(clean_df$bee_species == "Lasioglossum cordleyi")
+sum(clean_df$bee_species == "Lasioglossum cressonii")
+sum(clean_df$bee_species == "Lasioglossum nigrum")
+sum(clean_df$bee_species == "Lasioglossum occulturn")
+sum(clean_df$bee_species == "Lasioglossum ruidosense")
+sum(clean_df$bee_species == "Megachile gentilis")
+sum(clean_df$bee_species == "Megachile melanophaea")
+sum(clean_df$bee_species == "Melissodes metenuus")
+sum(clean_df$bee_species == "Melissodes microstictus")
+sum(clean_df$bee_species == "Melissodes rivalis")
+sum(clean_df$bee_species == "Sphecodes kincaidii")
+sum(clean_df$bee_species == "Sphecodes Triepeolus")
+
+#This is interesting. Again, most have only one or two obs., but one has 9 and 
+#one has 15.
+```
