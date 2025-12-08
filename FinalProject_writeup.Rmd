@@ -46,12 +46,12 @@ Bees create valuable products like honey and propolis that are medicinally benef
 
 Researchers in a variety of regions have investigated how bee communities differ between native and nonnative plants which provides important context for the analysis of the possible patterns in coastal Oregon. Seitz found that pollinator visitation rates were generally higher on native plants but that several nonnative species attract abundant generalist bees in Maryland, USA, showing that nonnative plants can be beneficial even though they do not necessarily support the full native bee community (Seitz et al. 2020). Similarly, Marini’s article gathered data from Canada that showed that nonnative plant species were visited mostly by broadly ranging generalist pollinators. Bee communities visiting native and nonnative plants were distinct which raised concern about long-term habitat suitability for more specialized or regionally restricted bees (Martini et al. 2025). In contrast, Chrobock’s paper visits the relationship of plants and bee visitations in urban and semi-natural grassland sites (different habitats) in Switzerland. They found that nonnative ornamental plants showed high visitation in gardens but are disproportionately used by common generalist bees and provide weak support for specialist species (Chrobock et al. 2013). This was to highlight how visitation alone can mask underlying declines in specialists and shifts in community structure. These studies show native and nonnative plants often attract different sets of bee species and nonnative plants can facilitate the spread of invasive flora when bees support their reproduction. 
 
-To address our problem, we will be using GEOHub’s Oregon ecoregions data to classify OBA points into coastal uplands and lowlands using latitude and longitude and the OregonFlora to determine which plant species is native or exotic to evaluate how plant identities shape bee abundance and species diversity in the coastal region of Oregon.
+Our research questions are whether coastal Oregon bee species preferentially visit native over nonnative plants, and which plant species, both native and non, attract the greatest number of bee species. To address our questions, we will be using GEOHub’s Oregon ecoregions data to classify OBA points into coastal uplands and lowlands using latitude and longitude, and the OregonFlora to determine which plant species is native or exotic to evaluate how plant identities shape bee abundance and species diversity in the coastal region of Oregon.
 
 
 ### Purpose & Why Now
 
-One key data combination is joining OBA lat and long with GEOHub polygons to filter to coastal ecoregions (listed as 1A and 1B). Another combination is joining OBA plant species with OregonFLora to create a native/nonnative column (where 1=native and 0=nonnative). Aggregating units to compute response variables per unit (bee abundance, bee richness , and species list) will be for composition analysis. Possibly adding percentages of cover for the plant species. AB testing will test whether the same set of bee species would visit plants if origin labels were random. These refined approaches can guide local restoration and planting decisions by choosing which plant species and plant origins best support diverse and abundant bee communities in coastal Oregon. This is needed now because the coast has unique and vulnerable coastal ecosystems where restoration and planting decisions are actively being made. OBA provides longer-term data and spatially distributed observations that let us connect patterns observed in other parts of the world across years and across the landscapes. This would provide regionally explicit evidence about which plant types best support bees. The results can directly inform restoration priorities (which native species to plant), roadside and land-management strategies, and policy decisions about invasive plant control, relevant for local conservation and agricultural pollination resilience.
+One key data combination is joining OBA lat and long with GEOHub polygons to filter to coastal ecoregions (listed as 1A and 1B). Another combination is joining OBA plant species with OregonFLora to create a native/nonnative column (where 1=native and 0=nonnative). Aggregating units to compute response variables per unit (bee abundance, bee richness , and species list) will be for composition analysis. AB testing will test whether the same set of bee species would visit plants if origin labels were random. These refined approaches can guide local restoration and planting decisions by choosing which plant species and plant origins best support diverse and abundant bee communities in coastal Oregon. This is needed now because the coast has unique and vulnerable coastal ecosystems where restoration and planting decisions are actively being made. OBA provides longer-term data and spatially distributed observations that let us connect patterns observed in other parts of the world across years and across the landscapes. This would provide regionally explicit evidence about which plant types best support bees. The results can directly inform restoration priorities (which native species to plant), roadside and land-management strategies, and policy decisions about invasive plant control, relevant for local conservation and agricultural pollination resilience.
 
 
 ### Hypothesis & brief rationale
@@ -357,7 +357,7 @@ clean_df <- clean_df[clean_df$bee_species != "Sphecodes",]
 ```
 
 
-The last thing we need to do before running the A/B test is to account for the fact that the number of observations of bees on native flowers and the number of observations on nonnative flowers might be substantially different. If so, we'll need to standardize the data.
+The last thing we need to do before running the A/B test is to account for the fact that the number of observations of bees on native flowers and the number of observations on nonnative flowers might be substantially different:
 
 
 ```{r}
@@ -375,9 +375,9 @@ relative_native <- round(native_obs_count/clean_df_row_number,2)
 relative_nonnative <- round(nonnative_obs_count/clean_df_row_number,2)
 ```
 
-So we see that the number of observations is relatively equal. Nevertheless, it won't hurt to standardize the statistic. 
+So we see that the number of observations is relatively equal. Nevertheless, it won't hurt to standardize the statistic we'll be using in the A/B test. This statistic is:
 
-Statistic used: (number of bee spp. on native plants * proportion of observations involving native plants) - (number of bee spp. on nonnative plants * proportion of observations involving nonnative plants)
+(number of bee spp. on native plants * proportion of observations involving native plants) - (number of bee spp. on nonnative plants * proportion of observations involving nonnative plants)
 
 ```{r}
 #Calculating the statistic:
@@ -442,32 +442,13 @@ p_value
 
 With this very high p-value, we fail to reject the null hypothesis that the number of species of native Oregon bees visiting native plants is the same as the number of species of native Oregon bees visiting nonnative plants.
 
-# [This is where I stopped editing on Saturday, 12.6.25]
-[Let's try to understand these results.What are the bee species visiting both natives and non-natives? Only natives? Only non-natives? This will tell us a lot.]
+## Second research question and visualizations
+
+For our second research question - on the species of native and nonnative plants attractive to the largest number of bee species, we'll divide our cleaned data frame into two sections - bee/native plant interactions and bee/nonnative plant interactions - and use Sankey diagrams to visualize the relationships. We'll focus on the top ten (in terms of bee species visitations) native and non-native plants. 
 
 
 ```{r}
-#I'm now going to investigate which bees are visiting which plants.
-
-#bee species that were seen visiting natives 
-bees_on_natives <- sort(unique(clean_df$bee_species[clean_df$IsNative == TRUE]))
-bees_on_nonnatives <- sort(unique(clean_df$bee_species[clean_df$IsNative == FALSE]))
-#waldo::compare(bees_on_natives, bees_on_nonnatives) #whew I don't understand this xD
-bees_on_natives
-bees_on_nonnatives
-#all_bees <- sort(unique(clean_df$bee_species))
-```
-
-[Chu - let's take a look at these two lists and go from there.]
-
-```{r}
-#Idea: make an excel file
-#write_xlsx(all_bees, "./bee_species.xlsx") #doesn't yet work. need to get in correct format
-```
-
-```{r}
-# have another idea. I want to visualize the relationships of bees to native and non-native plants. It would be fantastic to have a graph like the one on the oba website. Can we do this? Yes! (I did it)
-#First, we would need to splint the data into two separate data frames.
+#First, split the data into two separate data frames.
 #moving the bee_sp to the first column:
 clean_df <- clean_df %>% select(bee_species, everything())
 #create two dataframes and then drop the IsNative column
@@ -479,75 +460,12 @@ nonnative_df <- nonnative_df %>% select(c(bee_species,speciesPlant))
 head(nonnative_df)
 ```
 
-```{r}
-#Second, following the example of demo 6-3vis, we should create an adjacency matrix for each data frame
-#First I'll do the bee/native plant relationship
-nat_beeplant_adj <- table(native_df)
-nat_beeplant_adj <- unclass(nat_beeplant_adj) #the adjacency matrix
 
-#Third, convert the adj matrix to an igraph bipartite adjacency matrix (need igraph package)
-g_nat_beeplant <- graph_from_biadjacency_matrix(nat_beeplant_adj,
-                                           weighted =TRUE)
-
-#4th, put in in a from we can give to sankeyNetwork
-### find modules
-mod_nat_gplant <- cluster_walktrap(g_nat_beeplant)
-### assign vertices to modules
-groups <- membership(mod_nat_gplant)
-
-### convert to a network 3d object
-g_nat_beeplant_net3d <- igraph_to_networkD3(g_nat_beeplant, group=groups, 
-                                       what = "both")
-
-
-```
-
-```{r}
-#Graph of bee sp./native plant network
-sankeyNetwork(Links = g_nat_beeplant_net3d$links,
-             Nodes = g_nat_beeplant_net3d$nodes,
-            Source = "source", Target = "target",
-            Value = "value",  NodeID = "name", 
-            nodePadding = 0, height = 5000)
-```
 
 
 
 ```{r}
-#
-#Next I'll do the bee/non-native plant relationship
-nonnat_beeplant_adj <- table(nonnative_df)
-nonnat_beeplant_adj <- unclass(nonnat_beeplant_adj) #the adjacency matrix
-
-#Third, convert the adj matrix to an igraph bipartite adjacency matrix (need igraph package)
-g_nonnat_beeplant <- graph_from_biadjacency_matrix(nonnat_beeplant_adj,
-                                           weighted =TRUE)
-
-#4th, put in in a from we can give to sankeyNetwork
-### find modules
-mod_nonnat_gplant <- cluster_walktrap(g_nonnat_beeplant)
-### assign vertices to modules
-groups2 <- membership(mod_nonnat_gplant)
-
-### convert to a network 3d object
-g_nonnat_beeplant_net3d <- igraph_to_networkD3(g_nonnat_beeplant, group=groups2, 
-                                       what = "both")
-
-
-```
-
-
-```{r}
-#Graph of bee sp./non-native plant network
-sankeyNetwork(Links = g_nonnat_beeplant_net3d$links,
-             Nodes = g_nonnat_beeplant_net3d$nodes,
-            Source = "source", Target = "target",
-            Value = "value",  NodeID = "name", 
-            nodePadding = 0, height = 5000)
-```
-
-```{r}
-# filter to the most important 10 plant species and remake networks to those most important plant species and bees on those plants.
+# filter to the most visited (by species) 10 native plant species and make networks to those most important plant species and bees on those plants.
 
 plant_bee_list <- native_df %>%
   group_by(speciesPlant) %>%
@@ -579,15 +497,15 @@ g_native_plant <- graph_from_biadjacency_matrix(native_adj,
                                            weighted =TRUE)
 
 # put in in a from we can give to sankeyNetwork
-### find modules
+# find modules
 mod_native <- cluster_walktrap(g_native_plant)
-### assign vertices to modules
+# assign vertices to modules
 groups <- membership(mod_native)
 
-### convert to a network 3d object
+# convert to a network 3d object
 g_native_net3d <- igraph_to_networkD3(g_native_plant, group=groups, 
                                        what = "both")
-
+#graph the network
 sankeyNetwork(Links = g_native_net3d$links,
              Nodes = g_native_net3d$nodes,
             Source = "source", Target = "target",
@@ -599,6 +517,8 @@ sankeyNetwork(Links = g_native_net3d$links,
 
 
 ```{r}
+# filter to the most visited (by species) 10 nonnative plant species and make networks to those most important plant species and bees on those plants.
+
 plant_bee_list_nonnative <- nonnative_df %>%
   group_by(speciesPlant) %>%
   summarise(
@@ -628,15 +548,15 @@ g_nonnative_plant <- graph_from_biadjacency_matrix(nonnative_adj,
                                            weighted =TRUE)
 
 #put in in a from we can give to sankeyNetwork
-### find modules
+# find modules
 mod_nonnative <- cluster_walktrap(g_nonnative_plant)
-### assign vertices to modules
+# assign vertices to modules
 groups <- membership(mod_nonnative)
 
-### convert to a network 3d object
+# convert to a network 3d object
 g_nonnative_net3d <- igraph_to_networkD3(g_nonnative_plant, group=groups, 
                                        what = "both")
-
+#graph the network
 sankeyNetwork(Links = g_nonnative_net3d$links,
              Nodes = g_nonnative_net3d$nodes,
             Source = "source", Target = "target",
@@ -644,9 +564,10 @@ sankeyNetwork(Links = g_nonnative_net3d$links,
             nodePadding = 0, height = 1000)
 ```
 
+We'll also visualize these relationships with a bar graph of the number of bee species that were seen visiting native plants, non-native plants, and both. 
 
 ```{r}
-#clean_df
+
 bee_status <- clean_df %>%
   group_by(bee_species) %>%
   summarize(
@@ -666,7 +587,7 @@ bee_native_status <- bee_status %>%
 plants_list <- bee_native_status %>%
   group_by(visit_category)
 
-plants_list
+#plants_list
 
 
 count_df <- bee_native_status %>% 
@@ -695,63 +616,92 @@ bees_only_nonnative <- bee_native_status %>%
   pull(bee_species)
 ```
 
-
-```{r}
-bees_both
-bees_only_native
-bees_only_nonnative
-test <- as.list(bees_only_nonnative)
-
-```
+We were surprised by the percentage of bee species that were only seen interacting with nonnative plants, so we made bar graphs to visualize the number of observations of each bee species in these interactions.
 
 ```{r}
 
 #These are the counts of the bees that were listed as visiting only non-native.
 #They are overwhelmingly bees with only one-three observations
-sum(clean_df$bee_species == "Andrena angustitarsata")
-sum(clean_df$bee_species == "Andrena hippotes")
-sum(clean_df$bee_species == "Andrena perplexa")
-sum(clean_df$bee_species == "Andrena salicifloris")
-sum(clean_df$bee_species == "Anthidium manicatum") #Not a native bee!
-sum(clean_df$bee_species == "Anthophora pacifica")
-sum(clean_df$bee_species == "Bombus impatiens")
-sum(clean_df$bee_species == "Eucera frater")
-sum(clean_df$bee_species == "Halictus  ligatus")
-sum(clean_df$bee_species == "Halictus virgatellus")
-sum(clean_df$bee_species == "Lasioglossum boreale")
-sum(clean_df$bee_species == "Lasioglossum egregium")
-sum(clean_df$bee_species == "Lasioglossum kincaidii")
-sum(clean_df$bee_species == "Lasioglossum quebecense")
-sum(clean_df$bee_species == "Megachile brevis")
-sum(clean_df$bee_species == "Osmia nemoris")
-sum(clean_df$bee_species == "Sphecodes arvensiformis")
+
+#initializing a bee count vector
+bee_count_nonnative <- c()
+bee_sp_nonnativepl <- c("Andrena angustitarsata","Andrena hippotes","Andrena perplexa","Andrena salicifloris", "Anthidium manicatum","Anthophora pacifica", "Bombus impatiens", "Eucera frater", "Halictus  ligatus", "Halictus virgatellus","Lasioglossum boreale", "Lasioglossum egregium", "Lasioglossum kincaidii", "Lasioglossum quebecense", "Megachile brevis", "Osmia nemoris",  "Sphecodes arvensiformis")
+
+#appending the counts to the vector
+bee_count_nonnative <- append(bee_count_nonnative, sum(clean_df$bee_species == "Andrena angustitarsata"))
+bee_count_nonnative <- append(bee_count_nonnative, sum(clean_df$bee_species == "Andrena hippotes"))
+bee_count_nonnative <- append(bee_count_nonnative, sum(clean_df$bee_species == "Andrena perplexa"))
+bee_count_nonnative <- append(bee_count_nonnative, sum(clean_df$bee_species == "Andrena salicifloris"))
+bee_count_nonnative <- append(bee_count_nonnative, sum(clean_df$bee_species == "Anthidium manicatum")) #Not a native bee!
+bee_count_nonnative <- append(bee_count_nonnative, sum(clean_df$bee_species == "Anthophora pacifica"))
+bee_count_nonnative <- append(bee_count_nonnative, sum(clean_df$bee_species == "Bombus impatiens"))
+bee_count_nonnative <- append(bee_count_nonnative, sum(clean_df$bee_species == "Eucera frater"))
+bee_count_nonnative <- append(bee_count_nonnative, sum(clean_df$bee_species == "Halictus  ligatus"))
+bee_count_nonnative <- append(bee_count_nonnative, sum(clean_df$bee_species == "Halictus virgatellus"))
+bee_count_nonnative <- append(bee_count_nonnative, sum(clean_df$bee_species == "Lasioglossum boreale"))
+bee_count_nonnative <- append(bee_count_nonnative, sum(clean_df$bee_species == "Lasioglossum egregium"))
+bee_count_nonnative <- append(bee_count_nonnative, sum(clean_df$bee_species == "Lasioglossum kincaidii"))
+bee_count_nonnative <- append(bee_count_nonnative, sum(clean_df$bee_species == "Lasioglossum quebecense"))
+bee_count_nonnative <- append(bee_count_nonnative, sum(clean_df$bee_species == "Megachile brevis"))
+bee_count_nonnative <- append(bee_count_nonnative, sum(clean_df$bee_species == "Osmia nemoris"))
+bee_count_nonnative <- append(bee_count_nonnative, sum(clean_df$bee_species == "Sphecodes arvensiformis"))
+
+#creating a data frame of these vales
+nonnative_bee_counts_df <- data.frame(bee_sp_nonnativepl, bee_count_nonnative)
+#plotting
+ggplot(nonnative_bee_counts_df) + 
+  geom_col(aes(y=bee_sp_nonnativepl,x = bee_count_nonnative))
 ```
+
+And for comparison, we made a plot of the number of observations of each bee species that were only seen on native plants.
 
 
 ```{r}
-#I got curious if the native plant/bee interactions had similar
-#observation counts:
-bees_only_native
+#These are the counts of the bees that were listed as visiting only native.
+#They are also overwhelmingly bees with only one-three observations
 
-sum(clean_df$bee_species == "Agapostemon virescens")
-sum(clean_df$bee_species == "Andrena prunorum")
-sum(clean_df$bee_species == "Andrena vicina")
-sum(clean_df$bee_species == "Dianthidium")
-sum(clean_df$bee_species == "Hoplitis") 
-sum(clean_df$bee_species == "Lasioglossum buccale")
-sum(clean_df$bee_species == "Lasioglossum cordleyi")
-sum(clean_df$bee_species == "Lasioglossum cressonii")
-sum(clean_df$bee_species == "Lasioglossum nigrum")
-sum(clean_df$bee_species == "Lasioglossum occulturn")
-sum(clean_df$bee_species == "Lasioglossum ruidosense")
-sum(clean_df$bee_species == "Megachile gentilis")
-sum(clean_df$bee_species == "Megachile melanophaea")
-sum(clean_df$bee_species == "Melissodes metenuus")
-sum(clean_df$bee_species == "Melissodes microstictus")
-sum(clean_df$bee_species == "Melissodes rivalis")
-sum(clean_df$bee_species == "Sphecodes kincaidii")
-sum(clean_df$bee_species == "Sphecodes Triepeolus")
+#initializing a bee count vector
+bee_count_native <- c()
+bee_sp_nativepl <- c("Agapostemon virescens", "Andrena prunorum", "Andrena vicina", "Dianthidium", "Hoplitis", "Lasioglossum buccale", "Lasioglossum cordleyi", "Lasioglossum cressonii", "Lasioglossum nigrum", "Lasioglossum occulturn", "Lasioglossum ruidosense", "Megachile gentilis", "Megachile melanophaea", "Melissodes metenuus", "Melissodes microstictus", "Melissodes rivalis", "Sphecodes kincaidii", "Sphecodes Triepeolus")
+
+#appending the counts to the vector
+bee_count_native <- append(bee_count_native, sum(clean_df$bee_species == "Agapostemon virescens"))
+bee_count_native <- append(bee_count_native, sum(clean_df$bee_species == "Andrena prunorum"))
+bee_count_native <- append(bee_count_native, sum(clean_df$bee_species == "Andrena vicina"))
+bee_count_native <- append(bee_count_native, sum(clean_df$bee_species == "Dianthidium"))
+bee_count_native <- append(bee_count_native, sum(clean_df$bee_species == "Hoplitis"))
+bee_count_native <- append(bee_count_native, sum(clean_df$bee_species == "Lasioglossum buccale"))
+bee_count_native <- append(bee_count_native, sum(clean_df$bee_species == "Lasioglossum cordleyi"))
+bee_count_native <- append(bee_count_native, sum(clean_df$bee_species == "Lasioglossum cressonii"))
+bee_count_native <- append(bee_count_native, sum(clean_df$bee_species == "Lasioglossum nigrum"))
+bee_count_native <- append(bee_count_native, sum(clean_df$bee_species == "Lasioglossum occulturn"))
+bee_count_native <- append(bee_count_native, sum(clean_df$bee_species == "Lasioglossum ruidosense"))
+bee_count_native <- append(bee_count_native, sum(clean_df$bee_species == "Megachile gentilis"))
+bee_count_native <- append(bee_count_native, sum(clean_df$bee_species == "Megachile melanophaea"))
+bee_count_native <- append(bee_count_native, sum(clean_df$bee_species == "Melissodes metenuus"))
+bee_count_native <- append(bee_count_native, sum(clean_df$bee_species == "Melissodes microstictus"))
+bee_count_native <- append(bee_count_native, sum(clean_df$bee_species == "Melissodes rivalis"))
+bee_count_native <- append(bee_count_native, sum(clean_df$bee_species == "Sphecodes kincaidii"))
+bee_count_native <- append(bee_count_native, sum(clean_df$bee_species == "Sphecodes Triepeolus"))
+
+#creating a data frame of these vales
+native_bee_counts_df <- data.frame(bee_sp_nativepl, bee_count_native)
+#plotting
+ggplot(native_bee_counts_df) + 
+  geom_col(aes(y=bee_sp_nativepl,x = bee_count_native))
 
 #This is interesting. Again, most have only one or two obs., but one has 9 and 
 #one has 15.
+
 ```
+
+
+## Conclusion
+
+[here we talk about the conclusions we put on our poster, eh?
+- A/B test results
+- how the top 10 native plants are found in a variety of coastal niches
+- how the top 10 nonnative plants are weedy invasives
+- and then discuss how we learned from Dr. Ponisio that seeing only one - three observations of a bee species is not uncommon - many bees are rare!
+And that's it, eh? Am I missing something?]
+
