@@ -1,4 +1,4 @@
----
+ ---
 title: "BI410 Final Project"
 author: "Chu Lei & Jennifer Linnaea"
 date: "2025-6-12"
@@ -697,6 +697,12 @@ ggplot(native_bee_counts_df) +
 
 
 ## Conclusion
+
+Our AB test concluded that there is no statistical difference between the number of coastal bee species visiting native vs nonnative plants even after standardizing the statistic. With a high p-value of 0.45, we found no support for our first hypothesis that native Oregon plants attract more species of bees than nonnative plants in the Oregon coastal regions. The bar plot shows more than half of the bee species were found on both native and nonnative plants meaning most bee species are generalists and do not strictly prefer only native or nonnative plants. Many coastal Oregon bee species are flexible in their foraging choices but among the specialists, more tend to use native plants as depicted by the slightly larger number of bee species on native plants. About a quarter of the bee species were only observed on nonnative plants. Many of these species were represented by few individual observations (about 1-3 individuals), which limits a firm conclusion about the true plant-use patterns. However, Small sample sizes are expected because many species of bees are naturally rare, cryptic, or difficult to collect consistently and due to observational bias and selectivity of observers for certain environmental conditions like weather, field type, etc. 
+
+because if we only observe a few observations is not sufficient to make conlusions about an entire species of bees. However, this few observations of a bee species is not uncomming since many bees are rare and thats just how that works. 
+
+
 
 [here we talk about the conclusions we put on our poster, eh?
 - A/B test results
